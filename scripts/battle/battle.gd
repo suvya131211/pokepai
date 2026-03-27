@@ -27,6 +27,12 @@ var message_timer: float = 0.0
 var result: String = ""
 var leveled_up: bool = false
 
+# Trainer battle state
+var is_trainer_battle: bool = false
+var trainer_name: String = ""
+var trainer_team: Array = []
+var trainer_current: int = 0
+
 # Attack animation
 var wild_shake: float = 0.0
 var player_shake: float = 0.0
@@ -99,6 +105,27 @@ func start(party: Array, wild, inv = null):
 
 func set_inventory(inv):
     inventory = inv
+
+func start_trainer_battle(t_name: String, team: Array):
+    is_trainer_battle = true
+    trainer_name = t_name
+    trainer_team = team
+    trainer_current = 0
+    if trainer_team.size() > 0:
+        wild_pokemon = trainer_team[trainer_current]
+        wild_sprite = PokemonDB.get_sprite_texture(wild_pokemon.id)
+    phase = Phase.INTRO
+    message = "%s sent out %s!" % [trainer_name, wild_pokemon.pokemon_name if wild_pokemon else "???"]
+    intro_timer = 2.0
+    message_timer = 0.0
+    result = ""
+    leveled_up = false
+    selected_move_index = -1
+    ball_active = false
+    shake_count = 0
+    shake_timer = 0.0
+    poison_timer = 0.0
+    visible = true
 
 # ─── Process loop ─────────────────────────────────────────────────────────────
 func _process(delta):
@@ -275,7 +302,9 @@ func _handle_menu_click(pos: Vector2, w: float, h: float):
                     else:
                         _player_attack_move(-1)
                 "bag":
-                    if not inventory or inventory.total_balls() <= 0:
+                    if is_trainer_battle:
+                        message = "You can't catch trainer Pokemon!"
+                    elif not inventory or inventory.total_balls() <= 0:
                         message = "No Pokeballs left!"
                     else:
                         phase = Phase.BAG
@@ -386,15 +415,46 @@ func _wild_attack():
     message_timer = 1.5
 
 func _on_wild_fainted():
-    phase = Phase.END
-    result = "defeated"
     var xp_gain = wild_pokemon.level * 10
     leveled_up = player_pokemon.gain_xp(xp_gain) if player_pokemon else false
-    if leveled_up:
-        message = "%s fainted! +%d XP — %s leveled up!" % [wild_pokemon.pokemon_name, xp_gain, player_pokemon.pokemon_name]
+
+    if is_trainer_battle:
+        trainer_current += 1
+        if trainer_current < trainer_team.size():
+            # Trainer sends out next Pokemon
+            wild_pokemon = trainer_team[trainer_current]
+            wild_sprite = PokemonDB.get_sprite_texture(wild_pokemon.id)
+            phase = Phase.INTRO
+            intro_timer = 1.5
+            if leveled_up:
+                message = "%s fainted! +%d XP — %s leveled up! %s sends out %s!" % [
+                    trainer_team[trainer_current - 1].pokemon_name, xp_gain,
+                    player_pokemon.pokemon_name, trainer_name, wild_pokemon.pokemon_name]
+            else:
+                message = "%s fainted! %s sends out %s!" % [
+                    trainer_team[trainer_current - 1].pokemon_name,
+                    trainer_name, wild_pokemon.pokemon_name]
+            message_timer = 2.0
+        else:
+            # All trainer Pokemon defeated
+            phase = Phase.END
+            result = "trainer_defeated"
+            if leveled_up:
+                message = "%s fainted! +%d XP — %s leveled up! You defeated %s!" % [
+                    wild_pokemon.pokemon_name, xp_gain,
+                    player_pokemon.pokemon_name, trainer_name]
+            else:
+                message = "%s fainted! +%d XP\nYou defeated %s!" % [
+                    wild_pokemon.pokemon_name, xp_gain, trainer_name]
+            message_timer = 2.5
     else:
-        message = "%s fainted! +%d XP" % [wild_pokemon.pokemon_name, xp_gain]
-    message_timer = 2.5
+        phase = Phase.END
+        result = "defeated"
+        if leveled_up:
+            message = "%s fainted! +%d XP — %s leveled up!" % [wild_pokemon.pokemon_name, xp_gain, player_pokemon.pokemon_name]
+        else:
+            message = "%s fainted! +%d XP" % [wild_pokemon.pokemon_name, xp_gain]
+        message_timer = 2.5
 
 func _on_player_fainted():
     phase = Phase.END
@@ -533,9 +593,13 @@ func _draw():
         draw_texture_rect(wild_sprite,
             Rect2(wx_pos - spr_size / 2 + shake_x + wobble, wy_pos - spr_size / 2 + bob, spr_size, spr_size), false)
 
-    # Wild info panel (top area)
+    # Wild info panel (top area) — show trainer name header during trainer battles
     if wild_pokemon:
-        _draw_info_panel(Vector2(w * 0.52, h * 0.04), w * 0.46, wild_pokemon, true)
+        if is_trainer_battle and trainer_name != "":
+            var label_str = trainer_name
+            draw_string(ThemeDB.fallback_font, Vector2(w * 0.52, h * 0.035),
+                label_str, HORIZONTAL_ALIGNMENT_LEFT, w * 0.46, 11, Color("#ffd700"))
+        _draw_info_panel(Vector2(w * 0.52, h * 0.06), w * 0.46, wild_pokemon, true)
 
     # === POKEBALL (during throw) ===
     if phase == Phase.CATCH_THROW and ball_active:
@@ -597,6 +661,9 @@ func _draw_info_panel(pos: Vector2, width: float, pkmn, is_wild: bool):
 
 func _draw_main_menu(w: float, h: float):
     for btn in _main_button_rects(w, h):
+        # Hide BAG button during trainer battles (can't catch trainer Pokemon)
+        if is_trainer_battle and btn["action"] == "bag":
+            continue
         draw_rect(btn["rect"], Color(0.08, 0.08, 0.12, 0.92))
         draw_rect(btn["rect"], btn["color"], false, 2.0)
         draw_string(ThemeDB.fallback_font,

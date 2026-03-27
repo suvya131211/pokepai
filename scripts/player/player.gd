@@ -11,10 +11,14 @@ var step_accumulator: float = 0.0
 var follower_pokemon = null  # Pokemon instance
 var _follower_pos: Vector2 = Vector2.ZERO
 
-@onready var chunk_manager = get_parent().get_node("ChunkManager")
+var area_manager = null
 
 signal encountered_pokemon(pokemon)
 signal entered_town(town_info: Dictionary)
+signal entered_exit(exit_data: Dictionary)
+
+func set_area_manager(mgr):
+	area_manager = mgr
 
 func _physics_process(delta: float) -> void:
 	if GameManager.state != GameManager.GameState.WORLD:
@@ -35,13 +39,15 @@ func _physics_process(delta: float) -> void:
 
 		# Check walkability before moving
 		var next_pos := global_position + desired_velocity * delta
-		if chunk_manager.is_walkable_at(next_pos.x, next_pos.y):
+		if area_manager and area_manager.is_walkable_at(next_pos.x, next_pos.y):
+			velocity = desired_velocity
+		elif not area_manager:
 			velocity = desired_velocity
 		else:
 			# Try sliding along axes
-			if chunk_manager.is_walkable_at(global_position.x + desired_velocity.x * delta, global_position.y):
+			if area_manager.is_walkable_at(global_position.x + desired_velocity.x * delta, global_position.y):
 				velocity = Vector2(desired_velocity.x, 0)
-			elif chunk_manager.is_walkable_at(global_position.x, global_position.y + desired_velocity.y * delta):
+			elif area_manager.is_walkable_at(global_position.x, global_position.y + desired_velocity.y * delta):
 				velocity = Vector2(0, desired_velocity.y)
 			else:
 				velocity = Vector2.ZERO
@@ -49,17 +55,22 @@ func _physics_process(delta: float) -> void:
 		move_and_slide()
 		step_accumulator += velocity.length() * delta
 
-		# Update chunk manager
-		chunk_manager.update_player_position(global_position)
+		# Tile-based encounter, exit, and item checking
+		var tile_x = int(global_position.x / TILE_SIZE)
+		var tile_y = int(global_position.y / TILE_SIZE)
+		if is_moving and area_manager:
+			var encounter = area_manager.check_encounter(tile_x, tile_y)
+			if not encounter.is_empty():
+				encountered_pokemon.emit(encounter)
 
-		# Collect nearby items
-		_check_item_pickups()
+			var exit = area_manager.check_exit(global_position.x, global_position.y)
+			if not exit.is_empty():
+				entered_exit.emit(exit)
 
-		# Check town entry
-		var town = chunk_manager.get_nearby_town(global_position)
-		if not town.is_empty() and town["name"] not in GameManager.towns_visited:
-			GameManager.towns_visited.append(town["name"])
-			entered_town.emit(town)
+			var item = area_manager.check_item(global_position.x, global_position.y)
+			if not item.is_empty():
+				item["collected"] = true
+				GameManager.item_collected.emit(item["type"])
 	else:
 		velocity = Vector2.ZERO
 
@@ -72,17 +83,9 @@ func consume_steps(threshold: float) -> bool:
 	return false
 
 func get_current_tile() -> int:
-	return chunk_manager.get_tile_at_world(global_position.x, global_position.y)
-
-func _check_item_pickups() -> void:
-	var items = chunk_manager.get_nearby_items(global_position, 20.0)
-	for item in items:
-		item["collected"] = true
-		GameManager.item_collected.emit(item["type"])
-		# Chunk needs redraw
-		var chunk = chunk_manager.get_chunk_at(global_position)
-		if chunk:
-			chunk.queue_redraw()
+	if area_manager:
+		return area_manager.get_tile_at_world(global_position.x, global_position.y)
+	return 0
 
 func _draw() -> void:
 	# Player body (16x16 centered)
