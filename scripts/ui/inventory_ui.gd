@@ -12,10 +12,11 @@ func toggle(inventory) -> void:
 	else:
 		GameManager.change_state(GameManager.GameState.WORLD)
 
-func _gui_input(event: InputEvent) -> void:
-	if event.is_action_pressed("open_inventory") or event.is_action_pressed("pause_menu"):
+func _unhandled_input(event: InputEvent) -> void:
+	if visible and (event.is_action_pressed("open_inventory") or event.is_action_pressed("pause_menu")):
 		visible = false
 		GameManager.change_state(GameManager.GameState.WORLD)
+		get_viewport().set_input_as_handled()
 
 func _process(_delta: float) -> void:
 	if visible:

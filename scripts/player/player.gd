@@ -87,6 +87,9 @@ func get_current_tile() -> int:
 		return area_manager.get_tile_at_world(global_position.x, global_position.y)
 	return 0
 
+func _ready():
+	z_index = 10  # draw above area tiles
+
 func _draw() -> void:
 	# Player body (16x16 centered)
 	var body_color := Color("#3f51b5")
