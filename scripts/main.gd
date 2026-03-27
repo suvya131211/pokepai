@@ -185,8 +185,22 @@ func _on_exit_entered(exit_data):
 	if target_area.is_empty():
 		return
 	var spawn = area_manager.load_area(target_area, target_x, target_y)
-	player.global_position = Vector2(spawn["x"] * 16 + 8, spawn["y"] * 16 + 8)
-	# Show area name
+	# Place player 2 tiles away from exit to avoid re-triggering
+	var sx = spawn["x"]
+	var sy = spawn["y"]
+	# Move inward based on which edge the exit is on
+	var area_w = 30
+	var area_h = 20
+	if area_manager.current_area:
+		area_w = area_manager.current_area.width
+		area_h = area_manager.current_area.height
+	if sy <= 1: sy = 3
+	elif sy >= area_h - 2: sy = area_h - 4
+	if sx <= 1: sx = 3
+	elif sx >= area_w - 2: sx = area_w - 4
+	player.global_position = Vector2(sx * 16 + 8, sy * 16 + 8)
+	player.exit_cooldown = 1.5
+	# Show area name briefly
 	story_dialog.show_dialog("", [target_area])
 
 func _on_npc_dialog(speaker, messages):

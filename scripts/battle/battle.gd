@@ -252,24 +252,68 @@ func _process(delta):
     queue_redraw()
 
 # ─── Input handling ───────────────────────────────────────────────────────────
-func _unhandled_input(event):
-    if not visible:
+func _input(event):
+    if not visible or GameManager.state != GameManager.GameState.BATTLE:
         return
-    if not (event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT):
-        return
-    get_viewport().set_input_as_handled()
-    var pos = event.position
-    var vp = get_viewport_rect().size
-    var w = vp.x
-    var h = vp.y
+    if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
+        get_viewport().set_input_as_handled()
+        # Transform mouse position to viewport coords
+        var pos = get_viewport().get_mouse_position()
+        var vp = get_viewport_rect().size
+        var w = vp.x
+        var h = vp.y
+        match phase:
+            Phase.MENU:
+                _handle_menu_click(pos, w, h)
+            Phase.FIGHT:
+                _handle_fight_click(pos, w, h)
+            Phase.BAG:
+                _handle_bag_click(pos, w, h)
+    # Keyboard shortcuts for battle
+    elif event is InputEventKey and event.pressed:
+        get_viewport().set_input_as_handled()
+        if phase == Phase.MENU:
+            if event.keycode == KEY_1 or event.keycode == KEY_F:
+                _handle_menu_action("fight")
+            elif event.keycode == KEY_2 or event.keycode == KEY_B:
+                _handle_menu_action("bag")
+            elif event.keycode == KEY_3:
+                _handle_menu_action("pokemon")
+            elif event.keycode == KEY_4 or event.keycode == KEY_R:
+                _handle_menu_action("run")
+        elif phase == Phase.FIGHT:
+            if event.keycode == KEY_ESCAPE or event.keycode == KEY_BACKSPACE:
+                phase = Phase.MENU
+                message = "What will %s do?" % (player_pokemon.pokemon_name if player_pokemon else "you")
+            elif event.keycode >= KEY_1 and event.keycode <= KEY_4:
+                var idx = event.keycode - KEY_1
+                if player_pokemon and idx < player_pokemon.known_moves.size():
+                    _player_attack_move(idx)
+        elif phase == Phase.BAG:
+            if event.keycode == KEY_ESCAPE or event.keycode == KEY_BACKSPACE:
+                phase = Phase.MENU
+                message = "What will %s do?" % (player_pokemon.pokemon_name if player_pokemon else "you")
 
-    match phase:
-        Phase.MENU:
-            _handle_menu_click(pos, w, h)
-        Phase.FIGHT:
-            _handle_fight_click(pos, w, h)
-        Phase.BAG:
-            _handle_bag_click(pos, w, h)
+func _handle_menu_action(action: String):
+    match action:
+        "fight":
+            if player_pokemon and player_pokemon.known_moves.size() > 0:
+                phase = Phase.FIGHT
+                message = "Choose a move!"
+            else:
+                _player_attack_move(-1)
+        "bag":
+            if is_trainer_battle:
+                message = "You can't catch trainer Pokemon!"
+            elif not inventory or inventory.total_balls() <= 0:
+                message = "No Pokeballs left!"
+            else:
+                phase = Phase.BAG
+                message = "Choose a ball!"
+        "pokemon":
+            message = "No other Pokemon available."
+        "run":
+            _flee()
 
 # ─── Menu button layout helpers ───────────────────────────────────────────────
 func _main_button_rects(w: float, h: float) -> Array:
@@ -328,25 +372,7 @@ func _ball_button_rects(w: float, h: float) -> Array:
 func _handle_menu_click(pos: Vector2, w: float, h: float):
     for btn in _main_button_rects(w, h):
         if btn["rect"].has_point(pos):
-            match btn["action"]:
-                "fight":
-                    if player_pokemon and player_pokemon.known_moves.size() > 0:
-                        phase = Phase.FIGHT
-                        message = "Choose a move!"
-                    else:
-                        _player_attack_move(-1)
-                "bag":
-                    if is_trainer_battle:
-                        message = "You can't catch trainer Pokemon!"
-                    elif not inventory or inventory.total_balls() <= 0:
-                        message = "No Pokeballs left!"
-                    else:
-                        phase = Phase.BAG
-                        message = "Choose a ball!"
-                "pokemon":
-                    message = "No other Pokemon available."
-                "run":
-                    _flee()
+            _handle_menu_action(btn["action"])
             return
 
 func _handle_fight_click(pos: Vector2, w: float, h: float):

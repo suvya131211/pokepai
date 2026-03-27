@@ -12,6 +12,7 @@ var follower_pokemon = null  # Pokemon instance
 var _follower_pos: Vector2 = Vector2.ZERO
 
 var area_manager = null
+var exit_cooldown: float = 0.0
 
 signal encountered_pokemon(pokemon)
 signal entered_town(town_info: Dictionary)
@@ -23,6 +24,9 @@ func set_area_manager(mgr):
 func _physics_process(delta: float) -> void:
 	if GameManager.state != GameManager.GameState.WORLD:
 		return
+
+	if exit_cooldown > 0:
+		exit_cooldown -= delta
 
 	var input_dir := Input.get_vector("move_left", "move_right", "move_up", "move_down")
 	is_moving = input_dir.length() > 0.1
@@ -63,9 +67,11 @@ func _physics_process(delta: float) -> void:
 			if not encounter.is_empty():
 				encountered_pokemon.emit(encounter)
 
-			var exit = area_manager.check_exit(global_position.x, global_position.y)
-			if not exit.is_empty():
-				entered_exit.emit(exit)
+			if exit_cooldown <= 0:
+				var exit = area_manager.check_exit(global_position.x, global_position.y)
+				if not exit.is_empty():
+					exit_cooldown = 1.0
+					entered_exit.emit(exit)
 
 			var item = area_manager.check_item(global_position.x, global_position.y)
 			if not item.is_empty():
