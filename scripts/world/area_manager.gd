@@ -14,18 +14,20 @@ func load_area(area_name: String, player_x: int = -1, player_y: int = -1) -> Dic
 	# Remove old area
 	if current_area:
 		current_area.queue_free()
+		current_area = null
 
 	# Get area data
 	var data = area_data_source.get_area(area_name)
 	if data.is_empty():
-		push_error("Area not found: " + area_name)
-		return {}
+		push_error("[AREA] Area not found: " + area_name)
+		return {"x": 14, "y": 10}
 
 	# Create new area
 	current_area = AreaScript.new()
 	current_area.setup(data)
 	current_area_name = area_name
 	add_child(current_area)
+	print("[AREA] Loaded: %s (%dx%d), encounters: %d" % [area_name, data.get("width",0), data.get("height",0), data.get("encounters",[]).size()])
 
 	# Return spawn position
 	if player_x >= 0 and player_y >= 0:
@@ -74,7 +76,7 @@ func check_encounter(tile_x: int, tile_y: int) -> Dictionary:
 		# Only check once per new tile stepped on (not per frame)
 		if current_tile != _last_encounter_tile:
 			_last_encounter_tile = current_tile
-			if randf() < 0.12:  # 12% chance per new tile
+			if randf() < 0.05:  # 5% chance per new tall grass tile (~1 encounter per 20 tiles)
 				return current_area.spawn_encounter()
 	return {}
 

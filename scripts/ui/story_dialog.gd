@@ -6,6 +6,7 @@ var char_timer: float = 0.0
 var chars_shown: int = 0
 var speaker: String = ""
 var on_complete: Callable
+var _input_cooldown: float = 0.0  # prevents same-frame input
 
 func _ready():
     visible = false
@@ -21,19 +22,22 @@ func show_dialog(speaker_name: String, msgs: Array, callback: Callable = Callabl
     char_timer = 0.0
     on_complete = callback
     visible = true
+    _input_cooldown = 0.3  # ignore input for 0.3s after showing
     GameManager.change_state(GameManager.GameState.PAUSED)
     queue_redraw()
 
 func _process(delta):
     if not visible:
         return
+    if _input_cooldown > 0:
+        _input_cooldown -= delta
     if current_index < messages.size():
         char_timer += delta * 40  # chars per second
         chars_shown = int(char_timer)
     queue_redraw()
 
 func _unhandled_input(event):
-    if not visible:
+    if not visible or _input_cooldown > 0:
         return
     if event is InputEventKey and event.pressed or event is InputEventMouseButton and event.pressed:
         get_viewport().set_input_as_handled()

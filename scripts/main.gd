@@ -196,9 +196,13 @@ func _on_exit_entered(exit_data):
 	var target_area = exit_data.get("target_area", "")
 	var target_x = exit_data.get("target_x", 14)
 	var target_y = exit_data.get("target_y", 14)
+	print("[MAIN] Exit triggered → %s at (%d, %d)" % [target_area, target_x, target_y])
 	if target_area.is_empty():
 		return
 	var spawn = area_manager.load_area(target_area, target_x, target_y)
+	if spawn.is_empty():
+		print("[MAIN] ERROR: Failed to load area %s" % target_area)
+		return
 	# Place player 2 tiles away from exit to avoid re-triggering
 	var sx = spawn["x"]
 	var sy = spawn["y"]
