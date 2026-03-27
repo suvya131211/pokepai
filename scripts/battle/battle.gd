@@ -273,46 +273,54 @@ func _unhandled_input(event):
 
 # ─── Menu button layout helpers ───────────────────────────────────────────────
 func _main_button_rects(w: float, h: float) -> Array:
-    # 2x2 grid in bottom-right quadrant: FIGHT | BAG / POKEMON | RUN
-    var bw = w * 0.2
-    var bh = 38.0
-    var x0 = w * 0.56
-    var y0 = h - 95
-    return [
-        {"label": "FIGHT",   "rect": Rect2(x0,       y0,      bw, bh), "action": "fight",   "color": Color("#e53935")},
-        {"label": "BAG",     "rect": Rect2(x0 + bw + 6, y0,  bw, bh), "action": "bag",     "color": Color("#2196f3")},
-        {"label": "POKEMON", "rect": Rect2(x0,       y0 + bh + 6, bw, bh), "action": "pokemon", "color": Color("#4caf50")},
-        {"label": "RUN",     "rect": Rect2(x0 + bw + 6, y0 + bh + 6, bw, bh), "action": "run", "color": Color("#ff9800")},
-    ]
+    var bottom_y = h * 0.78
+    var btn_area_x = w * 0.52
+    var btn_area_y = bottom_y + 8
+    var btn_w = w * 0.22
+    var btn_h = (h - bottom_y - 24) / 2.0
+    var gap = 6.0
+    var actions = ["fight", "bag", "pokemon", "run"]
+    var result = []
+    for i in 4:
+        var col = i % 2
+        var row = i / 2
+        var bx = btn_area_x + col * (btn_w + gap)
+        var by = btn_area_y + row * (btn_h + gap)
+        result.append({"label": actions[i].to_upper(), "rect": Rect2(bx, by, btn_w, btn_h), "action": actions[i], "color": Color.WHITE})
+    return result
 
 func _move_button_rects(w: float, h: float) -> Array:
-    var bw = w * 0.43
-    var bh = 36.0
-    var x0 = w * 0.02
-    var y0 = h - 115
+    var bottom_y = h * 0.78
+    var btn_area_x = w * 0.02
+    var btn_area_y = bottom_y + 8
+    var btn_w = w * 0.46
+    var btn_h = (h - bottom_y - 24) / 2.0
+    var gap = 6.0
     var rects = []
     for i in 4:
         var col = i % 2
         var row = i / 2
-        rects.append(Rect2(x0 + col * (bw + 8), y0 + row * (bh + 6), bw, bh))
+        rects.append(Rect2(btn_area_x + col * (btn_w + gap), btn_area_y + row * (btn_h + gap), btn_w, btn_h))
     return rects
 
 func _ball_button_rects(w: float, h: float) -> Array:
     var balls_list = [
-        {"key": "pokeball",  "label": "Pokeball",   "color": Color("#e53935")},
-        {"key": "greatball", "label": "Great Ball",  "color": Color("#2196f3")},
-        {"key": "ultraball", "label": "Ultra Ball",  "color": Color("#ffd700")},
-        {"key": "masterball","label": "Master Ball", "color": Color("#ab47bc")},
+        {"key": "pokeball",   "label": "Pokeball",    "color": Color("#e53935")},
+        {"key": "greatball",  "label": "Great Ball",   "color": Color("#2196f3")},
+        {"key": "ultraball",  "label": "Ultra Ball",   "color": Color("#ffd700")},
+        {"key": "masterball", "label": "Master Ball",  "color": Color("#ab47bc")},
     ]
-    var bw = w * 0.43
-    var bh = 34.0
-    var x0 = w * 0.02
-    var y0 = h - 115
+    var bottom_y = h * 0.78
+    var btn_area_x = w * 0.02
+    var btn_area_y = bottom_y + 8
+    var btn_w = w * 0.46
+    var btn_h = (h - bottom_y - 24) / 2.0
+    var gap = 6.0
     var result_list = []
-    for i in balls_list.size():
+    for i in 4:
         var col = i % 2
         var row = i / 2
-        balls_list[i]["rect"] = Rect2(x0 + col * (bw + 8), y0 + row * (bh + 6), bw, bh)
+        balls_list[i]["rect"] = Rect2(btn_area_x + col * (btn_w + gap), btn_area_y + row * (btn_h + gap), btn_w, btn_h)
         result_list.append(balls_list[i])
     return result_list
 
@@ -343,8 +351,8 @@ func _handle_menu_click(pos: Vector2, w: float, h: float):
 
 func _handle_fight_click(pos: Vector2, w: float, h: float):
     # Back button
-    var _fight_vp = get_viewport_rect().size
-    var back_rect = Rect2(_fight_vp.x - 105, _fight_vp.y - 45, 90, 34)
+    var vp = get_viewport_rect().size
+    var back_rect = Rect2(vp.x - 100, vp.y * 0.78 + 8, 90, 34)
     if back_rect.has_point(pos):
         phase = Phase.MENU
         message = "What will %s do?" % (player_pokemon.pokemon_name if player_pokemon else "you")
@@ -358,8 +366,8 @@ func _handle_fight_click(pos: Vector2, w: float, h: float):
 
 func _handle_bag_click(pos: Vector2, w: float, h: float):
     # Back button
-    var _bag_vp = get_viewport_rect().size
-    var back_rect = Rect2(_bag_vp.x - 105, _bag_vp.y - 45, 90, 34)
+    var vp = get_viewport_rect().size
+    var back_rect = Rect2(vp.x - 100, vp.y * 0.78 + 8, 90, 34)
     if back_rect.has_point(pos):
         phase = Phase.MENU
         message = "What will %s do?" % (player_pokemon.pokemon_name if player_pokemon else "you")
@@ -617,202 +625,273 @@ func _draw():
     var w = vp.x
     var h = vp.y
 
-    # Background
-    draw_rect(Rect2(0, 0, w, h), Color(0.04, 0.06, 0.1))
-    # Subtle arena stripes
-    for i in 8:
-        draw_rect(Rect2(0, h * 0.2 + i * h * 0.06, w, h * 0.06),
-            Color(0.06 + i * 0.008, 0.1 + i * 0.005, 0.18 + i * 0.01, 0.4))
+    # === LEAFGREEN BACKGROUND ===
+    # Sky gradient (light green → cyan at top)
+    for i in 10:
+        var t = float(i) / 10.0
+        var sky_color = Color(0.55 + t * 0.15, 0.85 - t * 0.1, 0.45 + t * 0.25)
+        draw_rect(Rect2(0, i * h * 0.05, w, h * 0.05 + 1), sky_color)
 
-    # Ground platforms
-    draw_rect(Rect2(w * 0.05, h * 0.6, w * 0.35, 8),  Color(0.3, 0.25, 0.2, 0.6))
-    draw_rect(Rect2(w * 0.55, h * 0.42, w * 0.35, 8), Color(0.3, 0.25, 0.2, 0.6))
+    # Ground (green gradient bottom half)
+    for i in 10:
+        var t = float(i) / 10.0
+        var ground_color = Color(0.35 + t * 0.15, 0.6 - t * 0.15, 0.2 + t * 0.05)
+        draw_rect(Rect2(0, h * 0.5 + i * h * 0.05, w, h * 0.05 + 1), ground_color)
 
-    # === PLAYER POKEMON (bottom-left) ===
-    var px = w * 0.22
-    var py = h * 0.52
-    if player_sprite and player_pokemon:
-        var shake_x = sin(player_shake * 20.0) * player_shake * 12.0
-        var spr_size = minf(w, h) * 0.22
-        if player_flash > 0:
-            draw_circle(Vector2(px + shake_x, py), spr_size * 0.5,
-                Color(1, 0.3, 0.3, player_flash * 0.3))
-        draw_texture_rect(player_sprite,
-            Rect2(px - spr_size / 2 + shake_x, py - spr_size / 2, spr_size, spr_size), false)
-    elif player_pokemon and not player_sprite:
-        draw_circle(Vector2(px, py), 30, player_pokemon.color)
-        draw_arc(Vector2(px, py), 30, 0, TAU, 16, Color.WHITE, 2.0)
-        draw_string(ThemeDB.fallback_font, Vector2(px - 20, py + 40), player_pokemon.pokemon_name, HORIZONTAL_ALIGNMENT_CENTER, 40, 9, Color.WHITE)
+    # === GRASS PLATFORMS ===
+    # Enemy platform (top-right)
+    _draw_grass_platform(Vector2(w * 0.7, h * 0.42), w * 0.3, 16)
+    # Player platform (bottom-left)
+    _draw_grass_platform(Vector2(w * 0.25, h * 0.68), w * 0.35, 20)
 
-    # Player info panel (bottom-left quadrant)
-    if player_pokemon:
-        _draw_info_panel(Vector2(w * 0.03, h * 0.65), w * 0.46, player_pokemon, false)
-
-    # === WILD POKEMON (top-right) ===
-    var wx_pos = w * 0.72
-    var wy_pos = h * 0.28
-    if wild_sprite and wild_pokemon:
+    # === ENEMY POKEMON (top-right, on platform) ===
+    var enemy_x = w * 0.7
+    var enemy_y = h * 0.28
+    if wild_pokemon:
         var shake_x = sin(wild_shake * 20.0) * wild_shake * 12.0
         var wobble = 0.0
         if phase == Phase.CATCH_SHAKE and shake_count > 0:
             wobble = sin(Time.get_ticks_msec() * 0.04) * 8.0
-        var bob = sin(Time.get_ticks_msec() * 0.003) * 3.0
-        var spr_size = minf(w, h) * 0.25
+        var spr_size = w * 0.18
+        if wild_sprite:
+            draw_texture_rect(wild_sprite,
+                Rect2(enemy_x - spr_size/2 + shake_x + wobble, enemy_y - spr_size + 10, spr_size, spr_size), false)
+        else:
+            draw_circle(Vector2(enemy_x + shake_x + wobble, enemy_y - spr_size * 0.3), spr_size * 0.4, wild_pokemon.color)
+            draw_arc(Vector2(enemy_x + shake_x + wobble, enemy_y - spr_size * 0.3), spr_size * 0.4, 0, TAU, 16, Color.WHITE, 2.0)
+        # Flash overlay
         if wild_flash > 0:
-            draw_circle(Vector2(wx_pos + shake_x + wobble, wy_pos + bob), spr_size * 0.5,
-                Color(1, 1, 1, wild_flash * 0.3))
-        draw_texture_rect(wild_sprite,
-            Rect2(wx_pos - spr_size / 2 + shake_x + wobble, wy_pos - spr_size / 2 + bob, spr_size, spr_size), false)
-    elif wild_pokemon and not wild_sprite:
-        draw_circle(Vector2(wx_pos, wy_pos), 35, wild_pokemon.color)
-        draw_arc(Vector2(wx_pos, wy_pos), 35, 0, TAU, 16, Color.WHITE, 2.0)
-        draw_string(ThemeDB.fallback_font, Vector2(wx_pos - 20, wy_pos + 45), wild_pokemon.pokemon_name, HORIZONTAL_ALIGNMENT_CENTER, 40, 9, Color.WHITE)
+            draw_circle(Vector2(enemy_x + shake_x, enemy_y - spr_size * 0.3), spr_size * 0.45, Color(1, 1, 1, wild_flash * 0.4))
 
-    # Wild info panel (top area) — show trainer name header during trainer battles
+    # === PLAYER POKEMON (bottom-left, on platform, shown from behind = larger) ===
+    var player_x = w * 0.25
+    var player_y = h * 0.55
+    if player_pokemon:
+        var shake_x = sin(player_shake * 20.0) * player_shake * 12.0
+        var spr_size = w * 0.22
+        if player_sprite:
+            draw_texture_rect(player_sprite,
+                Rect2(player_x - spr_size/2 + shake_x, player_y - spr_size + 15, spr_size, spr_size), false)
+        else:
+            draw_circle(Vector2(player_x + shake_x, player_y - spr_size * 0.25), spr_size * 0.45, player_pokemon.color)
+            draw_arc(Vector2(player_x + shake_x, player_y - spr_size * 0.25), spr_size * 0.45, 0, TAU, 16, Color.WHITE, 2.0)
+        if player_flash > 0:
+            draw_circle(Vector2(player_x + shake_x, player_y - spr_size * 0.25), spr_size * 0.5, Color(1, 0.3, 0.3, player_flash * 0.4))
+
+    # === ENEMY INFO PANEL (top-left) ===
     if wild_pokemon:
+        _draw_info_panel_leafgreen(Vector2(w * 0.02, h * 0.03), w * 0.45, wild_pokemon, true)
         if is_trainer_battle and trainer_name != "":
-            var label_str = trainer_name
-            draw_string(ThemeDB.fallback_font, Vector2(w * 0.52, h * 0.035),
-                label_str, HORIZONTAL_ALIGNMENT_LEFT, w * 0.46, 11, Color("#ffd700"))
-        _draw_info_panel(Vector2(w * 0.52, h * 0.06), w * 0.46, wild_pokemon, true)
+            draw_string(ThemeDB.fallback_font, Vector2(w * 0.02, h * 0.02),
+                trainer_name, HORIZONTAL_ALIGNMENT_LEFT, w * 0.45, 11, Color("#ffd700"))
+
+    # === PLAYER INFO PANEL (bottom-right, above buttons) ===
+    if player_pokemon:
+        _draw_info_panel_leafgreen(Vector2(w * 0.5, h * 0.6), w * 0.48, player_pokemon, false)
 
     # === POKEBALL (during throw) ===
     if phase == Phase.CATCH_THROW and ball_active:
-        _draw_pokeball(ball_pos, 12.0, ball_type_used)
+        _draw_pokeball(ball_pos, 14.0, ball_type_used)
     elif phase == Phase.CATCH_SHAKE:
-        # Ball sits on top of wild pokemon
         var wobble = sin(Time.get_ticks_msec() * 0.04) * 8.0 if shake_count > 0 else 0.0
-        _draw_pokeball(Vector2(wx_pos + wobble, wy_pos - 28), 12.0, ball_type_used)
+        _draw_pokeball(Vector2(enemy_x + wobble, enemy_y - 30), 14.0, ball_type_used)
 
     # === MOVE ANIMATION ===
-    # Move name text
     if move_anim_timer > 0:
         var alpha = minf(move_anim_timer / 0.5, 1.0)
         var mc = TYPE_COLORS.get(move_anim_type, Color.WHITE)
         mc.a = alpha
-        var tx = w * 0.5 if move_anim_target == "wild" else w * 0.15
-        var ty = h * 0.18 if move_anim_target == "wild" else h * 0.42
-        draw_string(ThemeDB.fallback_font, Vector2(tx - 40, ty), move_anim_name, HORIZONTAL_ALIGNMENT_CENTER, 80, 18, mc)
-
-    # Move particles
+        var tx = w * 0.55 if move_anim_target == "wild" else w * 0.1
+        var ty = h * 0.2 if move_anim_target == "wild" else h * 0.4
+        draw_string(ThemeDB.fallback_font, Vector2(tx, ty), move_anim_name, HORIZONTAL_ALIGNMENT_LEFT, 120, 18, mc)
     for p in move_particles:
         var alpha = p["life"] / p["max_life"]
         var c = p["color"]
         c.a = alpha
         draw_circle(Vector2(p["x"], p["y"]), p["size"] * alpha, c)
 
-    # === MESSAGE BOX ===
-    var msg_rect = Rect2(w * 0.02, h - 78, w * 0.96, 62)
-    draw_rect(msg_rect, Color(0.08, 0.12, 0.2, 0.96))
-    draw_rect(msg_rect, Color("#4fc3f7"), false, 2.0)
-    draw_string(ThemeDB.fallback_font, Vector2(w * 0.04, h - 50),
-        message, HORIZONTAL_ALIGNMENT_LEFT, w * 0.92, 14, Color("#e0e0e0"))
+    # === BOTTOM SECTION: MESSAGE + BUTTONS ===
+    # Dark bottom bar
+    var bottom_y = h * 0.78
+    var bottom_h = h - bottom_y
+    draw_rect(Rect2(0, bottom_y, w, bottom_h), Color(0.08, 0.1, 0.15))
+    draw_line(Vector2(0, bottom_y), Vector2(w, bottom_y), Color(0.2, 0.25, 0.35), 2.0)
 
-    # === PHASE-SPECIFIC UI ===
+    # Message box (left half)
+    var msg_x = w * 0.02
+    var msg_y = bottom_y + 8
+    var msg_w = w * 0.48
+    var msg_h = bottom_h - 16
+    draw_rect(Rect2(msg_x, msg_y, msg_w, msg_h), Color(0.12, 0.16, 0.22))
+    draw_rect(Rect2(msg_x, msg_y, msg_w, msg_h), Color("#4fc3f7"), false, 2.0)
+    # Message text
+    draw_string(ThemeDB.fallback_font, Vector2(msg_x + 14, msg_y + msg_h * 0.45),
+        message, HORIZONTAL_ALIGNMENT_LEFT, msg_w - 28, 14, Color("#e8e8e8"))
+
+    # === PHASE-SPECIFIC BUTTONS (right half) ===
     match phase:
         Phase.MENU:
-            _draw_main_menu(w, h)
+            _draw_main_menu_leafgreen(w, h, bottom_y)
         Phase.FIGHT:
-            _draw_move_menu(w, h)
+            _draw_move_menu_leafgreen(w, h, bottom_y)
         Phase.BAG:
-            _draw_bag_menu(w, h)
+            _draw_bag_menu_leafgreen(w, h, bottom_y)
 
-func _draw_info_panel(pos: Vector2, width: float, pkmn, is_wild: bool):
-    var panel_h = 52.0
-    draw_rect(Rect2(pos.x, pos.y, width, panel_h), Color(0.06, 0.08, 0.14, 0.92))
-    draw_rect(Rect2(pos.x, pos.y, width, panel_h), Color("#4fc3f7"), false, 1.5)
+func _draw_grass_platform(center: Vector2, width: float, height: float):
+    # Draw a green grass ellipse (like LeafGreen)
+    var points: PackedVector2Array = []
+    for i in 24:
+        var angle = float(i) / 24.0 * TAU
+        points.append(center + Vector2(cos(angle) * width * 0.5, sin(angle) * height * 0.5))
+    draw_colored_polygon(points, Color(0.35, 0.55, 0.25, 0.8))
+    # Grass edge highlight
+    draw_arc(center, width * 0.5, 0, PI, 24, Color(0.45, 0.65, 0.3), 2.0)
+    # Grass texture lines
+    for i in 5:
+        var gx = center.x - width * 0.3 + i * width * 0.15
+        draw_line(Vector2(gx, center.y), Vector2(gx + 3, center.y - 6), Color(0.3, 0.5, 0.2, 0.5), 1.5)
+
+func _draw_info_panel_leafgreen(pos: Vector2, width: float, pkmn, is_enemy: bool):
+    var panel_h = 56.0
+    # Panel background (grey like LeafGreen)
+    draw_rect(Rect2(pos.x, pos.y, width, panel_h), Color(0.15, 0.18, 0.25, 0.95))
+    draw_rect(Rect2(pos.x, pos.y, width, panel_h), Color("#4fc3f7"), false, 2.0)
 
     # Name + Level
-    var name_str = "%s    Lv.%d" % [pkmn.pokemon_name, pkmn.level]
-    draw_string(ThemeDB.fallback_font, Vector2(pos.x + 8, pos.y + 18),
-        name_str, HORIZONTAL_ALIGNMENT_LEFT, width - 16, 14, Color.WHITE)
+    draw_string(ThemeDB.fallback_font, Vector2(pos.x + 10, pos.y + 20),
+        pkmn.pokemon_name, HORIZONTAL_ALIGNMENT_LEFT, width * 0.5, 15, Color.WHITE)
+    draw_string(ThemeDB.fallback_font, Vector2(pos.x + width - 80, pos.y + 20),
+        "Lv.%d" % pkmn.level, HORIZONTAL_ALIGNMENT_LEFT, 70, 13, Color("#ccc"))
 
     # Status icon
-    var status_icon = ""
+    var status_txt = ""
     var status_col = Color.WHITE
     match pkmn.status:
-        "sleep":     status_icon = "ZZZ"; status_col = Color("#9c27b0")
-        "paralyzed": status_icon = "PAR"; status_col = Color("#ffd600")
-        "poisoned":  status_icon = "PSN"; status_col = Color("#ab47bc")
-    if status_icon != "":
-        draw_string(ThemeDB.fallback_font, Vector2(pos.x + width - 44, pos.y + 18),
-            status_icon, HORIZONTAL_ALIGNMENT_LEFT, 40, 11, status_col)
+        "sleep": status_txt = "SLP"; status_col = Color("#9c27b0")
+        "paralyzed": status_txt = "PAR"; status_col = Color("#ffd600")
+        "poisoned": status_txt = "PSN"; status_col = Color("#ab47bc")
+    if status_txt != "":
+        draw_string(ThemeDB.fallback_font, Vector2(pos.x + width * 0.45, pos.y + 20),
+            status_txt, HORIZONTAL_ALIGNMENT_LEFT, 40, 11, status_col)
+
+    # HP label
+    draw_string(ThemeDB.fallback_font, Vector2(pos.x + 10, pos.y + 36),
+        "HP", HORIZONTAL_ALIGNMENT_LEFT, 24, 11, Color("#ffd700"))
 
     # HP bar
-    var bar_y = pos.y + 26
-    var bar_w = width - 16
-    draw_rect(Rect2(pos.x + 8, bar_y, bar_w, 9), Color("#222"))
+    var bar_x = pos.x + 34
+    var bar_y = pos.y + 28
+    var bar_w = width - 44
+    draw_rect(Rect2(bar_x, bar_y, bar_w, 10), Color("#333"))
     var ratio = float(pkmn.hp) / float(pkmn.max_hp)
     var bar_color = Color("#4caf50") if ratio > 0.5 else (Color("#ff9800") if ratio > 0.25 else Color("#f44336"))
-    draw_rect(Rect2(pos.x + 8, bar_y, bar_w * ratio, 9), bar_color)
+    draw_rect(Rect2(bar_x, bar_y, bar_w * ratio, 10), bar_color)
 
-    # HP numbers
-    var hp_str = "HP: %d/%d" % [pkmn.hp, pkmn.max_hp]
-    draw_string(ThemeDB.fallback_font, Vector2(pos.x + 8, bar_y + 20),
-        hp_str, HORIZONTAL_ALIGNMENT_LEFT, bar_w, 11, Color("#aaa"))
+    # HP numbers (only on player's panel)
+    if not is_enemy:
+        draw_string(ThemeDB.fallback_font, Vector2(pos.x + width - 90, pos.y + 50),
+            "%d/%d" % [pkmn.hp, pkmn.max_hp], HORIZONTAL_ALIGNMENT_RIGHT, 80, 12, Color("#ccc"))
 
-func _draw_main_menu(w: float, h: float):
-    for btn in _main_button_rects(w, h):
-        # Hide BAG button during trainer battles (can't catch trainer Pokemon)
+func _draw_main_menu_leafgreen(w: float, h: float, bottom_y: float):
+    # 2x2 grid: FIGHT | BAG / POKEMON | RUN
+    var btn_area_x = w * 0.52
+    var btn_area_y = bottom_y + 8
+    var btn_w = w * 0.22
+    var btn_h = (h - bottom_y - 24) / 2.0
+    var gap = 6.0
+
+    var buttons = [
+        {"label": "FIGHT",   "color": Color(0.85, 0.45, 0.5),  "action": "fight"},
+        {"label": "BAG",     "color": Color(0.85, 0.65, 0.35), "action": "bag"},
+        {"label": "POKEMON", "color": Color(0.4, 0.7, 0.45),   "action": "pokemon"},
+        {"label": "RUN",     "color": Color(0.35, 0.5, 0.8),   "action": "run"},
+    ]
+    for i in 4:
+        var col = i % 2
+        var row = i / 2
+        var bx = btn_area_x + col * (btn_w + gap)
+        var by = btn_area_y + row * (btn_h + gap)
+        var btn = buttons[i]
+        var bg_color = btn["color"]
+        # Grey out BAG during trainer battle
         if is_trainer_battle and btn["action"] == "bag":
-            continue
-        draw_rect(btn["rect"], Color(0.08, 0.08, 0.12, 0.92))
-        draw_rect(btn["rect"], btn["color"], false, 2.0)
-        draw_string(ThemeDB.fallback_font,
-            Vector2(btn["rect"].position.x + 8, btn["rect"].position.y + 26),
-            btn["label"], HORIZONTAL_ALIGNMENT_LEFT, btn["rect"].size.x - 16, 14, btn["color"])
+            bg_color = Color(0.3, 0.3, 0.3)
+        draw_rect(Rect2(bx, by, btn_w, btn_h), bg_color)
+        draw_rect(Rect2(bx, by, btn_w, btn_h), bg_color.lightened(0.3), false, 2.0)
+        # Label centered
+        draw_string(ThemeDB.fallback_font, Vector2(bx + 8, by + btn_h * 0.65),
+            btn["label"], HORIZONTAL_ALIGNMENT_LEFT, btn_w - 16, 15, Color.WHITE)
 
-func _draw_move_menu(w: float, h: float):
+func _draw_move_menu_leafgreen(w: float, h: float, bottom_y: float):
     if not player_pokemon:
         return
     var moves = player_pokemon.known_moves
-    var move_rects = _move_button_rects(w, h)
-    for i in mini(moves.size(), move_rects.size()):
+    var btn_area_x = w * 0.02
+    var btn_area_y = bottom_y + 8
+    var btn_w = w * 0.46
+    var btn_h = (h - bottom_y - 24) / 2.0
+    var gap = 6.0
+
+    for i in mini(moves.size(), 4):
+        var col = i % 2
+        var row = i / 2
+        var bx = btn_area_x + col * (btn_w + gap)
+        var by = btn_area_y + row * (btn_h + gap)
         var mv = moves[i]
-        var r = move_rects[i]
         var tc = TYPE_COLORS.get(mv.get("type", "normal"), Color("#aaa"))
-        draw_rect(r, Color(0.06, 0.06, 0.12, 0.95))
-        draw_rect(r, tc, false, 2.0)
+        draw_rect(Rect2(bx, by, btn_w, btn_h), Color(0.1, 0.12, 0.18))
+        draw_rect(Rect2(bx, by, btn_w, btn_h), tc, false, 2.0)
         # Move name
         var mname = mv.get("name", "???")
-        draw_string(ThemeDB.fallback_font, Vector2(r.position.x + 6, r.position.y + 16),
-            mname, HORIZONTAL_ALIGNMENT_LEFT, r.size.x - 12, 13, Color.WHITE)
-        # Type label
-        var type_str = mv.get("type", "").to_upper()
-        draw_string(ThemeDB.fallback_font, Vector2(r.position.x + 6, r.position.y + 30),
-            type_str, HORIZONTAL_ALIGNMENT_LEFT, r.size.x * 0.5, 10, tc)
+        draw_string(ThemeDB.fallback_font, Vector2(bx + 8, by + btn_h * 0.5),
+            mname, HORIZONTAL_ALIGNMENT_LEFT, btn_w * 0.6, 13, Color.WHITE)
         # PP
         var pp_str = "PP %d/%d" % [mv.get("current_pp", 0), mv.get("pp", 0)]
         var pp_col = Color("#f44") if mv.get("current_pp", 0) == 0 else Color("#aaa")
-        draw_string(ThemeDB.fallback_font,
-            Vector2(r.position.x + r.size.x - 68, r.position.y + 30),
-            pp_str, HORIZONTAL_ALIGNMENT_LEFT, 64, 10, pp_col)
+        draw_string(ThemeDB.fallback_font, Vector2(bx + btn_w - 75, by + btn_h * 0.5),
+            pp_str, HORIZONTAL_ALIGNMENT_LEFT, 70, 11, pp_col)
+        # Type label
+        draw_string(ThemeDB.fallback_font, Vector2(bx + 8, by + btn_h * 0.85),
+            mv.get("type", "").to_upper(), HORIZONTAL_ALIGNMENT_LEFT, 60, 9, tc)
 
-    # Back button
-    _draw_back_button(w, h)
+    # Back button (far right)
+    _draw_back_btn(w, h, bottom_y)
 
-func _draw_bag_menu(w: float, h: float):
-    var ball_btns = _ball_button_rects(w, h)
-    for btn in ball_btns:
-        var count = inventory.balls.get(btn["key"], 0) if inventory else 0
-        var col = btn["color"] if count > 0 else Color("#555")
-        draw_rect(btn["rect"], Color(0.06, 0.06, 0.12, 0.95))
-        draw_rect(btn["rect"], col, false, 2.0)
-        var label = "%s  x%d" % [btn["label"], count]
-        draw_string(ThemeDB.fallback_font,
-            Vector2(btn["rect"].position.x + 8, btn["rect"].position.y + 22),
-            label, HORIZONTAL_ALIGNMENT_LEFT, btn["rect"].size.x - 16, 13,
+func _draw_bag_menu_leafgreen(w: float, h: float, bottom_y: float):
+    var balls_info = [
+        {"key": "pokeball",   "label": "Pokeball",    "color": Color("#e53935")},
+        {"key": "greatball",  "label": "Great Ball",   "color": Color("#2196f3")},
+        {"key": "ultraball",  "label": "Ultra Ball",   "color": Color("#ffd700")},
+        {"key": "masterball", "label": "Master Ball",  "color": Color("#ab47bc")},
+    ]
+    var btn_area_x = w * 0.02
+    var btn_area_y = bottom_y + 8
+    var btn_w = w * 0.46
+    var btn_h = (h - bottom_y - 24) / 2.0
+    var gap = 6.0
+
+    for i in 4:
+        var col = i % 2
+        var row = i / 2
+        var bx = btn_area_x + col * (btn_w + gap)
+        var by = btn_area_y + row * (btn_h + gap)
+        var bi = balls_info[i]
+        var count = inventory.balls.get(bi["key"], 0) if inventory else 0
+        var col_v = bi["color"] if count > 0 else Color("#555")
+        draw_rect(Rect2(bx, by, btn_w, btn_h), Color(0.1, 0.12, 0.18))
+        draw_rect(Rect2(bx, by, btn_w, btn_h), col_v, false, 2.0)
+        draw_string(ThemeDB.fallback_font, Vector2(bx + 8, by + btn_h * 0.65),
+            "%s  x%d" % [bi["label"], count], HORIZONTAL_ALIGNMENT_LEFT, btn_w - 16, 13,
             Color.WHITE if count > 0 else Color("#555"))
 
-    # Back button
-    _draw_back_button(w, h)
+    _draw_back_btn(w, h, bottom_y)
 
-func _draw_back_button(w: float, h: float):
-    var r = Rect2(w - 105, h - 45, 90, 34)
-    draw_rect(r, Color(0.1, 0.1, 0.15, 0.92))
-    draw_rect(r, Color("#ff9800"), false, 1.5)
-    draw_string(ThemeDB.fallback_font, Vector2(r.position.x + 8, r.position.y + 23),
-        "BACK", HORIZONTAL_ALIGNMENT_LEFT, r.size.x - 16, 13, Color("#ff9800"))
+func _draw_back_btn(w: float, h: float, bottom_y: float):
+    var r = Rect2(w - 100, bottom_y + 8, 90, 34)
+    draw_rect(r, Color(0.25, 0.2, 0.1))
+    draw_rect(r, Color("#ff9800"), false, 2.0)
+    draw_string(ThemeDB.fallback_font, Vector2(r.position.x + 12, r.position.y + 23),
+        "BACK", HORIZONTAL_ALIGNMENT_LEFT, 66, 14, Color("#ff9800"))
 
 func _draw_pokeball(pos: Vector2, radius: float, ball_key: String = "pokeball"):
     var top_col = Color("#e53935")
@@ -823,5 +902,5 @@ func _draw_pokeball(pos: Vector2, radius: float, ball_key: String = "pokeball"):
     draw_circle(pos + Vector2(0, -2), radius, top_col)
     draw_circle(pos + Vector2(0, 3), radius, Color.WHITE)
     draw_line(pos + Vector2(-radius, 0), pos + Vector2(radius, 0), Color("#333"), 2.5)
-    draw_circle(pos, 4, Color.WHITE)
-    draw_arc(pos, 4, 0, TAU, 8, Color("#333"), 2.0)
+    draw_circle(pos, 4.5, Color.WHITE)
+    draw_arc(pos, 4.5, 0, TAU, 8, Color("#333"), 2.0)
