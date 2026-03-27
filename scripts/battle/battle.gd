@@ -216,7 +216,7 @@ func _process(delta):
                         message = "%s broke free!" % wild_pokemon.pokemon_name
                 else:
                     shake_timer = 0.55
-                    message = "..." * (shake_count + 1)
+                    message = "...".repeat(shake_count + 1)
 
         Phase.END:
             if message_timer > 0:

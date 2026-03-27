@@ -82,6 +82,11 @@ func check_item(world_x: float, world_y: float) -> Dictionary:
 func get_current_area_name() -> String:
 	return current_area_name
 
+func get_tile_at_world(world_x: float, world_y: float) -> int:
+	var tx = int(world_x / 16)
+	var ty = int(world_y / 16)
+	return get_tile_at(tx, ty)
+
 func get_area_size() -> Vector2:
 	if current_area:
 		return Vector2(current_area.width * 16, current_area.height * 16)
