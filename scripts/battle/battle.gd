@@ -52,6 +52,13 @@ var max_shakes: int = 0   # 0-3 shakes before break or catch
 # Poison chip damage
 var poison_timer: float = 0.0
 
+# Move animation
+var move_anim_name: String = ""
+var move_anim_timer: float = 0.0
+var move_anim_type: String = ""
+var move_anim_target: String = ""  # "wild" or "player"
+var move_particles: Array = []
+
 # Wild HP at start of each turn (for red-flash transition)
 var selected_move_index: int = -1
 
@@ -88,8 +95,12 @@ func start(party: Array, wild, inv = null):
     wild_pokemon = wild
     inventory = inv
     wild_sprite = PokemonDB.get_sprite_texture(wild.id)
+    if wild_sprite == null:
+        push_warning("Failed to load wild sprite for id %d" % wild.id)
     if player_pokemon:
         player_sprite = PokemonDB.get_sprite_texture(player_pokemon.id)
+        if player_sprite == null:
+            push_warning("Failed to load player sprite for id %d" % player_pokemon.id)
     phase = Phase.INTRO
     message = "A wild %s appeared!" % wild.pokemon_name
     intro_timer = 2.0
@@ -137,6 +148,18 @@ func _process(delta):
     player_shake = move_toward(player_shake, 0.0, delta * 12.0)
     wild_flash = move_toward(wild_flash, 0.0, delta * 3.0)
     player_flash = move_toward(player_flash, 0.0, delta * 3.0)
+
+    # Move animation timer
+    if move_anim_timer > 0:
+        move_anim_timer -= delta
+
+    # Update move particles
+    for p in move_particles:
+        p["x"] += p["vx"] * delta
+        p["y"] += p["vy"] * delta
+        p["vy"] += 40 * delta  # gravity
+        p["life"] -= delta
+    move_particles = move_particles.filter(func(p): return p["life"] > 0)
 
     match phase:
         Phase.INTRO:
@@ -190,11 +213,12 @@ func _process(delta):
         Phase.CATCH_THROW:
             ball_pos += ball_vel * delta
             ball_vel.y += 100.0 * delta  # gravity
-            var target = Vector2(size.x * 0.72, size.y * 0.28)
+            var _vp = get_viewport_rect().size
+            var target = Vector2(_vp.x * 0.72, _vp.y * 0.28)
             if ball_pos.distance_to(target) < 35:
                 ball_active = false
                 _evaluate_catch()
-            elif ball_pos.y > size.y + 40 or ball_pos.x < -40 or ball_pos.x > size.x + 40:
+            elif ball_pos.y > _vp.y + 40 or ball_pos.x < -40 or ball_pos.x > _vp.x + 40:
                 ball_active = false
                 phase = Phase.MENU
                 message = "Oh no! The ball missed!"
@@ -234,8 +258,9 @@ func _gui_input(event):
     if not (event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT):
         return
     var pos = event.position
-    var w = size.x
-    var h = size.y
+    var vp = get_viewport_rect().size
+    var w = vp.x
+    var h = vp.y
 
     match phase:
         Phase.MENU:
@@ -317,7 +342,8 @@ func _handle_menu_click(pos: Vector2, w: float, h: float):
 
 func _handle_fight_click(pos: Vector2, w: float, h: float):
     # Back button
-    var back_rect = Rect2(size.x - 105, size.y - 45, 90, 34)
+    var _fight_vp = get_viewport_rect().size
+    var back_rect = Rect2(_fight_vp.x - 105, _fight_vp.y - 45, 90, 34)
     if back_rect.has_point(pos):
         phase = Phase.MENU
         message = "What will %s do?" % (player_pokemon.pokemon_name if player_pokemon else "you")
@@ -331,7 +357,8 @@ func _handle_fight_click(pos: Vector2, w: float, h: float):
 
 func _handle_bag_click(pos: Vector2, w: float, h: float):
     # Back button
-    var back_rect = Rect2(size.x - 105, size.y - 45, 90, 34)
+    var _bag_vp = get_viewport_rect().size
+    var back_rect = Rect2(_bag_vp.x - 105, _bag_vp.y - 45, 90, 34)
     if back_rect.has_point(pos):
         phase = Phase.MENU
         message = "What will %s do?" % (player_pokemon.pokemon_name if player_pokemon else "you")
@@ -362,6 +389,12 @@ func _player_attack_move(move_index: int):
         wild_pokemon.hp = maxi(0, wild_pokemon.hp - dmg_data["damage"])
         wild_shake = 1.0
         wild_flash = 1.0
+        # Trigger move animation
+        move_anim_name = move.get("name", "Attack")
+        move_anim_type = move.get("type", "normal")
+        move_anim_target = "wild"
+        move_anim_timer = 1.2
+        _spawn_move_particles(move_anim_type, "wild")
         var mname = move.get("name", "Attack")
         var eff_text = (" " + dmg_data["text"]) if dmg_data["text"] != "" else ""
         if dmg_data["damage"] > 0:
@@ -374,6 +407,12 @@ func _player_attack_move(move_index: int):
         wild_pokemon.hp = maxi(0, wild_pokemon.hp - dmg_data["damage"])
         wild_shake = 1.0
         wild_flash = 1.0
+        # Trigger move animation
+        move_anim_name = "Attack"
+        move_anim_type = "normal"
+        move_anim_target = "wild"
+        move_anim_timer = 1.2
+        _spawn_move_particles(move_anim_type, "wild")
         var eff_text = (" " + dmg_data["text"]) if dmg_data["text"] != "" else ""
         message = "%s attacks! %d dmg.%s" % [player_pokemon.pokemon_name, dmg_data["damage"], eff_text]
 
@@ -405,6 +444,12 @@ func _wild_attack():
     player_shake = 1.0
     player_flash = 1.0
     var mname = dmg_data.get("move_name", "")
+    # Trigger move animation
+    move_anim_name = mname if mname != "" else "Attack"
+    move_anim_type = dmg_data.get("move_type", wild_pokemon.type) if dmg_data.has("move_type") else wild_pokemon.type
+    move_anim_target = "player"
+    move_anim_timer = 1.2
+    _spawn_move_particles(move_anim_type, "player")
     var eff_text = (" " + dmg_data["text"]) if dmg_data["text"] != "" else ""
     if mname != "" and dmg_data["damage"] > 0:
         message = "%s used %s! %d dmg.%s" % [wild_pokemon.pokemon_name, mname, dmg_data["damage"], eff_text]
@@ -472,8 +517,9 @@ func _throw_ball(ball_key: String):
     inventory.balls[ball_key] -= 1
     ball_type_used = ball_key
     # Arc from bottom-centre toward wild pokemon
-    ball_pos = Vector2(size.x * 0.22, size.y * 0.6)
-    var target = Vector2(size.x * 0.72, size.y * 0.28)
+    var _throw_vp = get_viewport_rect().size
+    ball_pos = Vector2(_throw_vp.x * 0.22, _throw_vp.y * 0.6)
+    var target = Vector2(_throw_vp.x * 0.72, _throw_vp.y * 0.28)
     var dist = target - ball_pos
     # Give it enough upward velocity to arc nicely
     var travel_time = 0.7
@@ -543,12 +589,32 @@ func _flee():
     message = "Got away safely!"
     message_timer = 1.0
 
+func _spawn_move_particles(move_type: String, target: String):
+    var vp = get_viewport_rect().size
+    var cx = vp.x * 0.72 if target == "wild" else vp.x * 0.22
+    var cy = vp.y * 0.28 if target == "wild" else vp.y * 0.52
+    var color = TYPE_COLORS.get(move_type, Color.WHITE)
+
+    for i in 15:
+        var angle = randf() * TAU
+        var speed = randf_range(30, 80)
+        move_particles.append({
+            "x": cx, "y": cy,
+            "vx": cos(angle) * speed,
+            "vy": sin(angle) * speed - 20,
+            "life": 0.8,
+            "max_life": 0.8,
+            "color": color,
+            "size": randf_range(3, 8),
+        })
+
 # ─── Draw ─────────────────────────────────────────────────────────────────────
 func _draw():
     if not visible:
         return
-    var w = size.x
-    var h = size.y
+    var vp = get_viewport_rect().size
+    var w = vp.x
+    var h = vp.y
 
     # Background
     draw_rect(Rect2(0, 0, w, h), Color(0.04, 0.06, 0.1))
@@ -572,6 +638,10 @@ func _draw():
                 Color(1, 0.3, 0.3, player_flash * 0.3))
         draw_texture_rect(player_sprite,
             Rect2(px - spr_size / 2 + shake_x, py - spr_size / 2, spr_size, spr_size), false)
+    elif player_pokemon and not player_sprite:
+        draw_circle(Vector2(px, py), 30, player_pokemon.color)
+        draw_arc(Vector2(px, py), 30, 0, TAU, 16, Color.WHITE, 2.0)
+        draw_string(ThemeDB.fallback_font, Vector2(px - 20, py + 40), player_pokemon.pokemon_name, HORIZONTAL_ALIGNMENT_CENTER, 40, 9, Color.WHITE)
 
     # Player info panel (bottom-left quadrant)
     if player_pokemon:
@@ -592,6 +662,10 @@ func _draw():
                 Color(1, 1, 1, wild_flash * 0.3))
         draw_texture_rect(wild_sprite,
             Rect2(wx_pos - spr_size / 2 + shake_x + wobble, wy_pos - spr_size / 2 + bob, spr_size, spr_size), false)
+    elif wild_pokemon and not wild_sprite:
+        draw_circle(Vector2(wx_pos, wy_pos), 35, wild_pokemon.color)
+        draw_arc(Vector2(wx_pos, wy_pos), 35, 0, TAU, 16, Color.WHITE, 2.0)
+        draw_string(ThemeDB.fallback_font, Vector2(wx_pos - 20, wy_pos + 45), wild_pokemon.pokemon_name, HORIZONTAL_ALIGNMENT_CENTER, 40, 9, Color.WHITE)
 
     # Wild info panel (top area) — show trainer name header during trainer battles
     if wild_pokemon:
@@ -608,6 +682,23 @@ func _draw():
         # Ball sits on top of wild pokemon
         var wobble = sin(Time.get_ticks_msec() * 0.04) * 8.0 if shake_count > 0 else 0.0
         _draw_pokeball(Vector2(wx_pos + wobble, wy_pos - 28), 12.0, ball_type_used)
+
+    # === MOVE ANIMATION ===
+    # Move name text
+    if move_anim_timer > 0:
+        var alpha = minf(move_anim_timer / 0.5, 1.0)
+        var mc = TYPE_COLORS.get(move_anim_type, Color.WHITE)
+        mc.a = alpha
+        var tx = w * 0.5 if move_anim_target == "wild" else w * 0.15
+        var ty = h * 0.18 if move_anim_target == "wild" else h * 0.42
+        draw_string(ThemeDB.fallback_font, Vector2(tx - 40, ty), move_anim_name, HORIZONTAL_ALIGNMENT_CENTER, 80, 18, mc)
+
+    # Move particles
+    for p in move_particles:
+        var alpha = p["life"] / p["max_life"]
+        var c = p["color"]
+        c.a = alpha
+        draw_circle(Vector2(p["x"], p["y"]), p["size"] * alpha, c)
 
     # === MESSAGE BOX ===
     var msg_rect = Rect2(w * 0.02, h - 78, w * 0.96, 62)

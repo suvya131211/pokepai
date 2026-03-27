@@ -60,9 +60,9 @@ func _ready():
 
 	# Instructions panel
 	var instructions = InstructionsScript.new()
-	instructions.set_anchors_preset(Control.PRESET_FULL_RECT)
 	instructions.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	hud.add_child(instructions)
+	instructions.set_anchors_preset(Control.PRESET_FULL_RECT)
 
 	# Battle overlay
 	var battle_layer = CanvasLayer.new()
@@ -70,8 +70,8 @@ func _ready():
 	add_child(battle_layer)
 	battle_scene = BattleScript.new()
 	battle_scene.visible = false
-	battle_scene.set_anchors_preset(Control.PRESET_FULL_RECT)
 	battle_layer.add_child(battle_scene)
+	battle_scene.set_anchors_preset(Control.PRESET_FULL_RECT)
 	battle_scene.battle_ended.connect(_on_battle_ended)
 
 	# UI layer
@@ -80,20 +80,20 @@ func _ready():
 	add_child(ui_layer)
 
 	pokedex = PokedexScript.new()
-	pokedex.set_anchors_preset(Control.PRESET_FULL_RECT)
 	ui_layer.add_child(pokedex)
+	pokedex.set_anchors_preset(Control.PRESET_FULL_RECT)
 
 	inventory_ui = InventoryScript.new()
-	inventory_ui.set_anchors_preset(Control.PRESET_FULL_RECT)
 	ui_layer.add_child(inventory_ui)
+	inventory_ui.set_anchors_preset(Control.PRESET_FULL_RECT)
 
 	story_dialog = DialogScript.new()
-	story_dialog.set_anchors_preset(Control.PRESET_FULL_RECT)
 	ui_layer.add_child(story_dialog)
+	story_dialog.set_anchors_preset(Control.PRESET_FULL_RECT)
 
 	starter_select = StarterScript.new()
-	starter_select.set_anchors_preset(Control.PRESET_FULL_RECT)
 	ui_layer.add_child(starter_select)
+	starter_select.set_anchors_preset(Control.PRESET_FULL_RECT)
 	starter_select.starter_chosen.connect(_on_starter_chosen)
 
 	# Title screen
@@ -101,8 +101,8 @@ func _ready():
 	title_layer.layer = 30
 	add_child(title_layer)
 	title_screen = TitleScript.new()
-	title_screen.set_anchors_preset(Control.PRESET_FULL_RECT)
 	title_layer.add_child(title_screen)
+	title_screen.set_anchors_preset(Control.PRESET_FULL_RECT)
 	title_screen.start_game.connect(_on_title_done)
 
 	# Player signals
