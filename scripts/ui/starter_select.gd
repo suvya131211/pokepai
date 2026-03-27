@@ -21,7 +21,7 @@ func show_selection():
     GameManager.change_state(GameManager.GameState.PAUSED)
     queue_redraw()
 
-func _gui_input(event):
+func _unhandled_input(event):
     if not visible:
         return
     if event is InputEventMouseMotion:
@@ -33,6 +33,7 @@ func _gui_input(event):
             selected = slot
             visible = false
             starter_chosen.emit(STARTERS[slot]["id"])
+            get_viewport().set_input_as_handled()
 
 func _get_slot(pos: Vector2) -> int:
     var w = get_viewport_rect().size.x

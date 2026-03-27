@@ -32,10 +32,11 @@ func _process(delta):
         chars_shown = int(char_timer)
     queue_redraw()
 
-func _gui_input(event):
+func _unhandled_input(event):
     if not visible:
         return
     if event is InputEventKey and event.pressed or event is InputEventMouseButton and event.pressed:
+        get_viewport().set_input_as_handled()
         if chars_shown < messages[current_index].length():
             # Skip to full message
             chars_shown = messages[current_index].length()

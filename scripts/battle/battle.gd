@@ -252,11 +252,12 @@ func _process(delta):
     queue_redraw()
 
 # ─── Input handling ───────────────────────────────────────────────────────────
-func _gui_input(event):
+func _unhandled_input(event):
     if not visible:
         return
     if not (event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT):
         return
+    get_viewport().set_input_as_handled()
     var pos = event.position
     var vp = get_viewport_rect().size
     var w = vp.x

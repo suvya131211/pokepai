@@ -20,7 +20,7 @@ func _process(delta):
     press_alpha = maxf(0.0, sin(timer * 2.0) * 0.5 + 0.5) if timer > 2.0 else 0.0
     queue_redraw()
 
-func _gui_input(event):
+func _unhandled_input(event):
     if not visible or started:
         return
     if timer > 2.0:
@@ -28,6 +28,7 @@ func _gui_input(event):
             started = true
             visible = false
             start_game.emit()
+            get_viewport().set_input_as_handled()
 
 func _draw():
     if not visible:
