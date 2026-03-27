@@ -1,6 +1,8 @@
 extends Node2D
 class_name Chunk
 
+const WorldGeneratorScript = preload("res://scripts/world/world_generator.gd")
+
 var chunk_pos: Vector2i  # chunk grid position
 var tiles: Array = []    # flat array of tile IDs (CHUNK_SIZE * CHUNK_SIZE)
 var items: Array = []    # {local_x, local_y, type, collected}
@@ -10,7 +12,7 @@ var town_name: String = ""
 const CHUNK_SIZE := 16
 const TILE_SIZE := 16
 
-func generate(cx: int, cy: int, generator: WorldGenerator) -> void:
+func generate(cx: int, cy: int, generator) -> void:
 	chunk_pos = Vector2i(cx, cy)
 	position = Vector2(cx * CHUNK_SIZE * TILE_SIZE, cy * CHUNK_SIZE * TILE_SIZE)
 	tiles.resize(CHUNK_SIZE * CHUNK_SIZE)
@@ -25,9 +27,9 @@ func generate(cx: int, cy: int, generator: WorldGenerator) -> void:
 			var wy := cy * CHUNK_SIZE + ly
 			var tile: int
 			if is_town and lx >= 4 and lx < 12 and ly >= 4 and ly < 12:
-				tile = WorldGenerator.Tile.TOWN
+				tile = WorldGeneratorScript.Tile.TOWN
 			elif is_town and (lx == 8 or ly == 8):
-				tile = WorldGenerator.Tile.PATH
+				tile = WorldGeneratorScript.Tile.PATH
 			else:
 				tile = generator.get_tile(wx, wy)
 			tiles[ly * CHUNK_SIZE + lx] = tile
@@ -48,26 +50,26 @@ func generate(cx: int, cy: int, generator: WorldGenerator) -> void:
 
 func get_tile_at(local_x: int, local_y: int) -> int:
 	if local_x < 0 or local_y < 0 or local_x >= CHUNK_SIZE or local_y >= CHUNK_SIZE:
-		return WorldGenerator.Tile.MOUNTAIN
+		return WorldGeneratorScript.Tile.MOUNTAIN
 	return tiles[local_y * CHUNK_SIZE + local_x]
 
 func _draw() -> void:
 	for ly in CHUNK_SIZE:
 		for lx in CHUNK_SIZE:
-			var tile := tiles[ly * CHUNK_SIZE + lx]
-			var color: Color = WorldGenerator.TILE_COLORS.get(tile, Color.BLACK)
+			var tile: int = tiles[ly * CHUNK_SIZE + lx]
+			var color = WorldGeneratorScript.TILE_COLORS.get(tile, Color.BLACK)
 			var rect := Rect2(lx * TILE_SIZE, ly * TILE_SIZE, TILE_SIZE, TILE_SIZE)
 			draw_rect(rect, color)
 
 			# Tall grass detail stripes
-			if tile == WorldGenerator.Tile.TALL_GRASS:
+			if tile == WorldGeneratorScript.Tile.TALL_GRASS:
 				draw_rect(Rect2(lx * TILE_SIZE + 2, ly * TILE_SIZE + 2, 4, 10), Color(0, 0.3, 0, 0.3))
 				draw_rect(Rect2(lx * TILE_SIZE + 9, ly * TILE_SIZE + 1, 4, 11), Color(0, 0.3, 0, 0.3))
 
 			# Forest tree shapes
-			if tile == WorldGenerator.Tile.FOREST or tile == WorldGenerator.Tile.SNOW_FOREST:
+			if tile == WorldGeneratorScript.Tile.FOREST or tile == WorldGeneratorScript.Tile.SNOW_FOREST:
 				var trunk_color := Color("#5d4037")
-				var leaf_color := Color("#2e7d32") if tile == WorldGenerator.Tile.FOREST else Color("#78909c")
+				var leaf_color := Color("#2e7d32") if tile == WorldGeneratorScript.Tile.FOREST else Color("#78909c")
 				draw_rect(Rect2(lx * TILE_SIZE + 6, ly * TILE_SIZE + 10, 4, 6), trunk_color)
 				draw_circle(Vector2(lx * TILE_SIZE + 8, ly * TILE_SIZE + 7), 5, leaf_color)
 

@@ -11,7 +11,7 @@ var step_accumulator: float = 0.0
 var follower_pokemon = null  # Pokemon instance
 var _follower_pos: Vector2 = Vector2.ZERO
 
-@onready var chunk_manager: ChunkManager = get_parent().get_node("ChunkManager")
+@onready var chunk_manager = get_parent().get_node("ChunkManager")
 
 signal encountered_pokemon(pokemon)
 signal entered_town(town_info: Dictionary)
@@ -56,7 +56,7 @@ func _physics_process(delta: float) -> void:
 		_check_item_pickups()
 
 		# Check town entry
-		var town := chunk_manager.get_nearby_town(global_position)
+		var town = chunk_manager.get_nearby_town(global_position)
 		if not town.is_empty() and town["name"] not in GameManager.towns_visited:
 			GameManager.towns_visited.append(town["name"])
 			entered_town.emit(town)
@@ -75,12 +75,12 @@ func get_current_tile() -> int:
 	return chunk_manager.get_tile_at_world(global_position.x, global_position.y)
 
 func _check_item_pickups() -> void:
-	var items := chunk_manager.get_nearby_items(global_position, 20.0)
+	var items = chunk_manager.get_nearby_items(global_position, 20.0)
 	for item in items:
 		item["collected"] = true
 		GameManager.item_collected.emit(item["type"])
 		# Chunk needs redraw
-		var chunk := chunk_manager.get_chunk_at(global_position)
+		var chunk = chunk_manager.get_chunk_at(global_position)
 		if chunk:
 			chunk.queue_redraw()
 

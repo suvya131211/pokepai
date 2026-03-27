@@ -30,7 +30,7 @@ func _process(delta: float) -> void:
 
 func _update_particles(delta: float) -> void:
 	# Spawn
-	var rate := {"clear":0, "rain":10, "storm":15, "snow":5, "fog":2}.get(current, 0)
+	var rate = {"clear":0, "rain":10, "storm":15, "snow":5, "fog":2}.get(current, 0)
 	for i in rate:
 		if particles.size() < MAX_PARTICLES:
 			particles.append(_new_particle())

@@ -5,7 +5,7 @@ func _ready() -> void:
 	visible = false
 	mouse_filter = Control.MOUSE_FILTER_STOP
 
-func toggle(inventory: PlayerInventory) -> void:
+func toggle(inventory) -> void:
 	visible = !visible
 	if visible:
 		GameManager.change_state(GameManager.GameState.INVENTORY)

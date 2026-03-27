@@ -63,7 +63,7 @@ func get_species_for_habitat(habitat: String, time: String, weather: String) -> 
 		if habitat in s["habitats"] or "*" in s["habitats"]:
 			pool.append(s)
 	# Weather boosts
-	var weather_type_map := {"rain":"water", "snow":"ice", "storm":"electric", "fog":"ghost"}
+	var weather_type_map = {"rain":"water", "snow":"ice", "storm":"electric", "fog":"ghost"}
 	if weather in weather_type_map:
 		var boost_type = weather_type_map[weather]
 		for s in species:
@@ -79,7 +79,7 @@ func get_species_for_habitat(habitat: String, time: String, weather: String) -> 
 func weighted_random_pick(pool: Array[Dictionary]) -> Dictionary:
 	if pool.is_empty():
 		return {}
-	var weights := {1: 40.0, 2: 15.0, 3: 4.0, 4: 1.0}
+	var weights = {1: 40.0, 2: 15.0, 3: 4.0, 4: 1.0}
 	var total := 0.0
 	for s in pool:
 		total += weights.get(s["rarity"], 10.0)

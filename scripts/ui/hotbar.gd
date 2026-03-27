@@ -27,7 +27,7 @@ func _draw() -> void:
 		draw_rect(Rect2(x, 0, SLOT_SIZE, SLOT_SIZE), Color("#4fc3f7") if i < party.size() else Color("#333"), false, 1.5)
 
 		if i < party.size():
-			var pkmn: Pokemon = party[i]
+			var pkmn = party[i]
 			# Pokemon circle
 			draw_circle(Vector2(x + SLOT_SIZE / 2, SLOT_SIZE / 2 - 2), 12.0, pkmn.color)
 			draw_arc(Vector2(x + SLOT_SIZE / 2, SLOT_SIZE / 2 - 2), 12.0, 0, TAU, 12, Color.WHITE, 1.0)

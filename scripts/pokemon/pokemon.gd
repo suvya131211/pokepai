@@ -47,14 +47,14 @@ func is_alive() -> bool:
 func can_evolve() -> bool:
 	return species.has("evolves_to") and level >= species.get("evolve_level", 999)
 
-func evolve() -> Pokemon:
-	var evolved := Pokemon.new(species["evolves_to"], level)
+func evolve():
+	var evolved = get_script().new(species["evolves_to"], level)
 	evolved.hp = hp
 	evolved.xp = xp
 	evolved.xp_to_next = xp_to_next
 	return evolved
 
-func calc_damage(defender: Pokemon) -> Dictionary:
+func calc_damage(defender) -> Dictionary:
 	var eff := PokemonDB.get_effectiveness(type, defender.type)
 	var base := int(((2.0 * level + 10.0) / 250.0) * (float(atk) / float(defender.def_stat)) * 50.0 + 2.0)
 	var dmg := maxi(1, int(base * eff * randf_range(0.85, 1.0)))
@@ -66,6 +66,6 @@ func calc_damage(defender: Pokemon) -> Dictionary:
 
 func get_catch_rate() -> float:
 	var hp_factor := 1.0 - (float(hp) / float(max_hp)) * 0.7
-	var rarity_weights := {1: 0.7, 2: 0.45, 3: 0.25, 4: 0.05}
-	var rarity_factor: float = rarity_weights.get(species["rarity"], 0.5)
+	var rarity_weights = {1: 0.7, 2: 0.45, 3: 0.25, 4: 0.05}
+	var rarity_factor = rarity_weights.get(species["rarity"], 0.5)
 	return hp_factor * rarity_factor

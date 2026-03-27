@@ -1,6 +1,8 @@
 extends Control
 class_name Minimap
 
+const WorldGeneratorScript = preload("res://scripts/world/world_generator.gd")
+
 const MAP_SIZE := 100.0  # pixels
 const MAP_RADIUS := 6    # chunks to show
 
@@ -31,9 +33,9 @@ func _draw() -> void:
 			var my := (dy + MAP_RADIUS) * scale_px
 
 			# Get average color from generator
-			var world_gen := WorldGenerator.new()
-			var tile := world_gen.get_tile(cx * 16 + 8, cy * 16 + 8)
-			var color: Color = WorldGenerator.TILE_COLORS.get(tile, Color.BLACK)
+			var world_gen = WorldGeneratorScript.new()
+			var tile = world_gen.get_tile(cx * 16 + 8, cy * 16 + 8)
+			var color = WorldGeneratorScript.TILE_COLORS.get(tile, Color.BLACK)
 			draw_rect(Rect2(mx, my, scale_px, scale_px), color)
 
 	# Player dot (center)
@@ -42,6 +44,5 @@ func _draw() -> void:
 	draw_circle(Vector2(player_mx, player_my), 3, Color.WHITE)
 
 	# Info label
-	var time_str: String = ""
-	var phase_icon := {"day":"☀","dawn":"🌅","dusk":"🌇","night":"🌙"}.get(GameManager.time_of_day, "")
+	var phase_icon = {"day":"☀","dawn":"🌅","dusk":"🌇","night":"🌙"}.get(GameManager.time_of_day, "")
 	draw_string(ThemeDB.fallback_font, Vector2(0, MAP_SIZE + 14), "%s %s" % [phase_icon, GameManager.weather], HORIZONTAL_ALIGNMENT_LEFT, MAP_SIZE, 10, Color("#aaa"))

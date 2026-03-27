@@ -3,8 +3,8 @@ class_name BattleScene
 
 enum Phase { INTRO, MENU, PLAYER_ATK, WILD_ATK, END }
 
-var player_pokemon: Pokemon
-var wild_pokemon: Pokemon
+var player_pokemon
+var wild_pokemon
 var phase: Phase = Phase.INTRO
 var message: String = ""
 var message_timer: float = 0.0
@@ -12,9 +12,9 @@ var result: String = ""  # "defeated" / "fled" / ""
 var leveled_up: bool = false
 var xp_multiplier: float = 1.0
 
-signal battle_ended(result: String, wild: Pokemon)
+signal battle_ended(result: String, wild)
 
-func start(party: Array, wild: Pokemon) -> void:
+func start(party: Array, wild) -> void:
 	player_pokemon = party[0] if party.size() > 0 else null
 	wild_pokemon = wild
 	phase = Phase.INTRO
@@ -47,7 +47,7 @@ func _gui_input(event: InputEvent) -> void:
 	if not visible or phase != Phase.MENU:
 		return
 	if event is InputEventMouseButton and event.pressed:
-		var pos := event.position
+		var pos = event.position
 		var w := size.x
 		var h := size.y
 		var btn_y := h - 140
@@ -71,14 +71,14 @@ func _player_attack() -> void:
 	if not player_pokemon:
 		return
 	phase = Phase.PLAYER_ATK
-	var result_data := player_pokemon.calc_damage(wild_pokemon)
+	var result_data = player_pokemon.calc_damage(wild_pokemon)
 	wild_pokemon.hp = maxi(0, wild_pokemon.hp - result_data["damage"])
 	message = "%s attacked! %d dmg. %s" % [player_pokemon.pokemon_name, result_data["damage"], result_data["text"]]
 	message_timer = 1.5
 	if not wild_pokemon.is_alive():
 		phase = Phase.END
 		result = "defeated"
-		var base_xp := wild_pokemon.level * 10
+		var base_xp: int = wild_pokemon.level * 10
 		var xp := int(base_xp * xp_multiplier)
 		leveled_up = player_pokemon.gain_xp(xp)
 		message = "%s fainted! Got %d XP." % [wild_pokemon.pokemon_name, xp]
@@ -92,7 +92,7 @@ func _wild_attack() -> void:
 		return
 	if not player_pokemon:
 		return
-	var result_data := wild_pokemon.calc_damage(player_pokemon)
+	var result_data = wild_pokemon.calc_damage(player_pokemon)
 	player_pokemon.hp = maxi(0, player_pokemon.hp - result_data["damage"])
 	message = "%s attacked! %d dmg." % [wild_pokemon.pokemon_name, result_data["damage"]]
 	message_timer = 1.5
@@ -142,12 +142,12 @@ func _draw() -> void:
 			draw_rect(Rect2(xs[i], btn_y, 130, 36), Color("#4fc3f7"), false, 1.5)
 			draw_string(ThemeDB.fallback_font, Vector2(xs[i] + 10, btn_y + 24), labels[i], HORIZONTAL_ALIGNMENT_LEFT, 110, 13, Color.WHITE)
 
-func _draw_pokemon(pkmn: Pokemon, pos: Vector2, radius: float) -> void:
+func _draw_pokemon(pkmn, pos: Vector2, radius: float) -> void:
 	draw_circle(pos, radius, pkmn.color)
 	draw_arc(pos, radius, 0, TAU, 24, Color.WHITE, 2.0)
 	draw_string(ThemeDB.fallback_font, pos + Vector2(-20, radius + 14), pkmn.pokemon_name, HORIZONTAL_ALIGNMENT_CENTER, 40, 10, Color.WHITE)
 
-func _draw_hp_bar(pos: Vector2, width: float, pkmn: Pokemon) -> void:
+func _draw_hp_bar(pos: Vector2, width: float, pkmn) -> void:
 	draw_string(ThemeDB.fallback_font, pos, "%s Lv.%d" % [pkmn.pokemon_name, pkmn.level], HORIZONTAL_ALIGNMENT_LEFT, width, 12, Color("#ccc"))
 	draw_rect(Rect2(pos.x, pos.y + 5, width, 8), Color("#333"))
 	var ratio := float(pkmn.hp) / float(pkmn.max_hp)

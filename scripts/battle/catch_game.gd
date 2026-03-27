@@ -3,8 +3,8 @@ class_name CatchScene
 
 enum CatchPhase { AIM, THROW, SHAKE, BREAK, RESULT }
 
-var wild_pokemon: Pokemon
-var inventory: PlayerInventory
+var wild_pokemon
+var inventory
 var phase: CatchPhase = CatchPhase.AIM
 var ball_pos: Vector2
 var ball_vel: Vector2
@@ -19,9 +19,9 @@ var aim_dir: float = 1.0
 var message: String = "Click to throw Pokeball!"
 var razz_active: bool = false
 
-signal catch_ended(result: String, wild: Pokemon)
+signal catch_ended(result: String, wild)
 
-func start(wild: Pokemon, inv: PlayerInventory) -> void:
+func start(wild, inv) -> void:
 	wild_pokemon = wild
 	inventory = inv
 	phase = CatchPhase.AIM
@@ -87,7 +87,7 @@ func _gui_input(event: InputEvent) -> void:
 		_throw_ball(event.position)
 
 func _throw_ball(mouse_pos: Vector2) -> void:
-	var ball_type := inventory.use_ball()
+	var ball_type: String = inventory.use_ball()
 	if ball_type.is_empty():
 		message = "No Pokeballs!"
 		return
@@ -99,7 +99,7 @@ func _throw_ball(mouse_pos: Vector2) -> void:
 	phase = CatchPhase.THROW
 
 func _check_catch() -> void:
-	var catch_rate := wild_pokemon.get_catch_rate()
+	var catch_rate: float = wild_pokemon.get_catch_rate()
 	if razz_active:
 		catch_rate = minf(0.95, catch_rate + 0.2)
 		razz_active = false
