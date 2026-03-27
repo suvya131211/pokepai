@@ -6,7 +6,6 @@ extends Node2D
 
 var spawner
 var battle_scene
-var catch_scene
 var hud
 var pokedex
 var inventory_ui
@@ -26,7 +25,6 @@ var DayNightScript = preload("res://scripts/world/day_night.gd")
 var WeatherScript = preload("res://scripts/world/weather.gd")
 var HUDScript = preload("res://scripts/ui/hud.gd")
 var BattleScript = preload("res://scripts/battle/battle.gd")
-var CatchScript = preload("res://scripts/battle/catch_game.gd")
 var PokedexScript = preload("res://scripts/ui/pokedex.gd")
 var InventoryScript = preload("res://scripts/ui/inventory_ui.gd")
 
@@ -65,13 +63,6 @@ func _ready() -> void:
 	add_child(battle_layer)
 	battle_scene.battle_ended.connect(_on_battle_ended)
 
-	# Catch scene (overlay)
-	catch_scene = CatchScript.new()
-	catch_scene.visible = false
-	catch_scene.set_anchors_preset(Control.PRESET_FULL_RECT)
-	battle_layer.add_child(catch_scene)
-	catch_scene.catch_ended.connect(_on_catch_ended)
-
 	# Pokedex (overlay)
 	pokedex = PokedexScript.new()
 	pokedex.set_anchors_preset(Control.PRESET_FULL_RECT)
@@ -91,9 +82,13 @@ func _ready() -> void:
 
 func _process(delta: float) -> void:
 	if GameManager.state == GameManager.GameState.WORLD:
-		# Check encounters
-		var wild = spawner.check_encounter(player)
-		if wild:
+		# Check for nearby overworld Pokemon
+		var nearby = chunk_manager.get_nearby_pokemon(player.global_position, 16.0)
+		if nearby.size() > 0:
+			var owp = nearby[0]
+			var PokemonScript = preload("res://scripts/pokemon/pokemon.gd")
+			var wild = PokemonScript.new(owp.pokemon_data["id"], owp.level)
+			owp.queue_free()  # remove from overworld
 			_start_battle(wild)
 
 		# Pokedex toggle
@@ -110,35 +105,19 @@ func _process(delta: float) -> void:
 func _start_battle(wild) -> void:
 	GameManager.add_to_pokedex(wild.id)
 	GameManager.change_state(GameManager.GameState.BATTLE)
+	battle_scene.set_inventory(player.get_node("Inventory"))
 	battle_scene.start(GameManager.party, wild)
 
-func _on_battle_ended(result: String, wild) -> void:
-	match result:
-		"defeated":
-			# Check evolution
-			for i in GameManager.party.size():
-				var pkmn = GameManager.party[i]
-				if pkmn.can_evolve():
-					var evolved = pkmn.evolve()
-					GameManager.party[i] = evolved
-					if player.follower_pokemon == pkmn:
-						player.follower_pokemon = evolved
-			GameManager.change_state(GameManager.GameState.WORLD)
-		"fled":
-			GameManager.change_state(GameManager.GameState.WORLD)
-		"catch":
-			# Switch to catch scene
-			var inv = player.get_node("Inventory")
-			catch_scene.start(wild, inv)
-			GameManager.change_state(GameManager.GameState.CATCH)
-
-func _on_catch_ended(result: String, wild) -> void:
-	if result == "caught":
-		GameManager.party.append(wild)
-		GameManager.add_to_pokedex(wild.id, true)
-		GameManager.pokemon_caught.emit(wild)
-		player.follower_pokemon = wild
-		player._follower_pos = player.global_position
+func _on_battle_ended(result_str: String, wild) -> void:
+	match result_str:
+		"caught":
+			GameManager.party.append(wild)
+			GameManager.add_to_pokedex(wild.id, true)
+			GameManager.pokemon_caught.emit(wild)
+			player.follower_pokemon = wild
+			player._follower_pos = player.global_position
+		"defeated", "fled":
+			pass
 	GameManager.change_state(GameManager.GameState.WORLD)
 
 func _update_legendaries(delta: float) -> void:

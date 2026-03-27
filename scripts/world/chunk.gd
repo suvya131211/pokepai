@@ -6,6 +6,7 @@ const WorldGeneratorScript = preload("res://scripts/world/world_generator.gd")
 var chunk_pos: Vector2i  # chunk grid position
 var tiles: Array = []    # flat array of tile IDs (CHUNK_SIZE * CHUNK_SIZE)
 var items: Array = []    # {local_x, local_y, type, collected}
+var spawned_pokemon: Array = []
 var is_town: bool = false
 var town_name: String = ""
 
@@ -47,6 +48,33 @@ func generate(cx: int, cy: int, generator) -> void:
 				elif roll < 0.9: item_type = "razz"
 				else: item_type = "ultraball"
 				items.append({"lx": lx, "ly": ly, "type": item_type, "collected": false})
+
+	# Spawn visible Pokemon on walkable tiles
+	var spawn_count = randi_range(0, 2)  # 0-2 Pokemon per chunk (sporadic)
+	for i in spawn_count:
+		var lx = randi_range(0, CHUNK_SIZE - 1)
+		var ly = randi_range(0, CHUNK_SIZE - 1)
+		var tile = tiles[ly * CHUNK_SIZE + lx]
+		var habitat = WorldGeneratorScript.TILE_HABITAT.get(tile, "")
+		if habitat.is_empty() or habitat == "path" or habitat == "town":
+			continue
+		var pool = PokemonDB.get_species_for_habitat(habitat, "day", "clear")
+		if pool.is_empty():
+			continue
+		var species = PokemonDB.weighted_random_pick(pool)
+		if species.is_empty():
+			continue
+		var spawn_data = {"lx": lx, "ly": ly, "species": species, "level": randi_range(1, 8)}
+		spawned_pokemon.append(spawn_data)
+
+	_spawn_pokemon_nodes()
+
+func _spawn_pokemon_nodes() -> void:
+	for data in spawned_pokemon:
+		var owp = preload("res://scripts/world/overworld_spawn.gd").new()
+		owp.setup(data["species"], data["level"])
+		owp.position = Vector2(data["lx"] * TILE_SIZE + TILE_SIZE / 2, data["ly"] * TILE_SIZE + TILE_SIZE / 2)
+		add_child(owp)
 
 func get_tile_at(local_x: int, local_y: int) -> int:
 	if local_x < 0 or local_y < 0 or local_x >= CHUNK_SIZE or local_y >= CHUNK_SIZE:

@@ -2,26 +2,26 @@ extends Node
 
 # Pokemon species data — 20 species
 var species: Array[Dictionary] = [
-	{"id":1,  "name":"Leafling",  "type":"grass",   "color":Color("#66bb6a"), "hp":45, "atk":49, "def":49, "rarity":1, "habitats":["grass","tall_grass","forest"], "evolves_to":15, "evolve_level":16},
-	{"id":2,  "name":"Flamini",   "type":"fire",    "color":Color("#ef5350"), "hp":39, "atk":52, "def":43, "rarity":1, "habitats":["sand","cave"], "evolves_to":16, "evolve_level":18},
-	{"id":3,  "name":"Aquafin",   "type":"water",   "color":Color("#42a5f5"), "hp":44, "atk":48, "def":65, "rarity":1, "habitats":["sand","beach"], "evolves_to":17, "evolve_level":18},
-	{"id":4,  "name":"Buzzer",    "type":"electric", "color":Color("#ffee58"), "hp":35, "atk":55, "def":30, "rarity":1, "habitats":["grass","tall_grass","town"], "evolves_to":18, "evolve_level":16},
-	{"id":5,  "name":"Rockhead",  "type":"rock",    "color":Color("#8d6e63"), "hp":50, "atk":60, "def":70, "rarity":2, "habitats":["mountain","cave"]},
-	{"id":6,  "name":"Ghostly",   "type":"ghost",   "color":Color("#7e57c2"), "hp":30, "atk":65, "def":25, "rarity":2, "habitats":["cave","forest"]},
-	{"id":7,  "name":"Iciclaw",   "type":"ice",     "color":Color("#80deea"), "hp":55, "atk":50, "def":45, "rarity":2, "habitats":["snow","mountain"]},
-	{"id":8,  "name":"Toxifrog",  "type":"poison",  "color":Color("#ab47bc"), "hp":40, "atk":45, "def":35, "rarity":1, "habitats":["tall_grass","forest"]},
-	{"id":9,  "name":"Psychowl",  "type":"psychic", "color":Color("#ec407a"), "hp":38, "atk":70, "def":28, "rarity":2, "habitats":["town","path"]},
-	{"id":10, "name":"Mudcrawl",  "type":"ground",  "color":Color("#a1887f"), "hp":55, "atk":55, "def":50, "rarity":1, "habitats":["sand","cave","path"]},
-	{"id":11, "name":"Windwing",  "type":"flying",  "color":Color("#90caf9"), "hp":42, "atk":55, "def":30, "rarity":2, "habitats":["grass","mountain","forest"]},
-	{"id":12, "name":"Darkshade", "type":"dark",    "color":Color("#455a64"), "hp":60, "atk":65, "def":55, "rarity":2, "habitats":["cave","forest"]},
-	{"id":13, "name":"Steelvault","type":"steel",   "color":Color("#b0bec5"), "hp":65, "atk":60, "def":80, "rarity":3, "habitats":["mountain","cave"]},
-	{"id":14, "name":"Dragonfly", "type":"dragon",  "color":Color("#26c6da"), "hp":55, "atk":80, "def":50, "rarity":3, "habitats":["forest"]},
-	{"id":15, "name":"Fairydust", "type":"fairy",   "color":Color("#f48fb1"), "hp":50, "atk":45, "def":45, "rarity":2, "habitats":["grass","tall_grass","town"]},
-	{"id":16, "name":"Infernoth", "type":"fire",    "color":Color("#ff7043"), "hp":35, "atk":90, "def":25, "rarity":3, "habitats":["cave","sand"]},
-	{"id":17, "name":"Tidecrest", "type":"water",   "color":Color("#1565c0"), "hp":70, "atk":65, "def":70, "rarity":3, "habitats":["beach"]},
-	{"id":18, "name":"Thunderex", "type":"electric", "color":Color("#f9a825"), "hp":60, "atk":85, "def":40, "rarity":3, "habitats":["mountain"]},
-	{"id":19, "name":"COSMEON",   "type":"psychic", "color":Color("#e0e0e0"), "hp":80, "atk":100,"def":80, "rarity":4, "habitats":["*"]},
-	{"id":20, "name":"VOIDREX",   "type":"dark",    "color":Color("#1a1a2e"), "hp":100,"atk":110,"def":90, "rarity":4, "habitats":["*"]},
+	{"id":1,  "name":"Bulbasaur",  "sprite":"res://assets/sprites/1.png",   "type":"grass",    "pokeapi":1,   "color":Color("#66bb6a"), "hp":45, "atk":49, "def":49, "rarity":1, "habitats":["grass","tall_grass","forest"], "evolves_to":null},
+	{"id":2,  "name":"Charmander", "sprite":"res://assets/sprites/4.png",   "type":"fire",     "pokeapi":4,   "color":Color("#ef5350"), "hp":39, "atk":52, "def":43, "rarity":1, "habitats":["sand","cave"], "evolves_to":null},
+	{"id":3,  "name":"Squirtle",   "sprite":"res://assets/sprites/7.png",   "type":"water",    "pokeapi":7,   "color":Color("#42a5f5"), "hp":44, "atk":48, "def":65, "rarity":1, "habitats":["sand","beach"], "evolves_to":null},
+	{"id":4,  "name":"Pikachu",    "sprite":"res://assets/sprites/25.png",  "type":"electric", "pokeapi":25,  "color":Color("#ffee58"), "hp":35, "atk":55, "def":30, "rarity":1, "habitats":["grass","tall_grass","town"], "evolves_to":18, "evolve_level":16},
+	{"id":5,  "name":"Geodude",    "sprite":"res://assets/sprites/74.png",  "type":"rock",     "pokeapi":74,  "color":Color("#8d6e63"), "hp":50, "atk":60, "def":70, "rarity":2, "habitats":["mountain","cave"]},
+	{"id":6,  "name":"Gastly",     "sprite":"res://assets/sprites/92.png",  "type":"ghost",    "pokeapi":92,  "color":Color("#7e57c2"), "hp":30, "atk":65, "def":25, "rarity":2, "habitats":["cave","forest"]},
+	{"id":7,  "name":"Sneasel",    "sprite":"res://assets/sprites/215.png", "type":"ice",      "pokeapi":215, "color":Color("#80deea"), "hp":55, "atk":50, "def":45, "rarity":2, "habitats":["snow","mountain"]},
+	{"id":8,  "name":"Nidoran",    "sprite":"res://assets/sprites/29.png",  "type":"poison",   "pokeapi":29,  "color":Color("#ab47bc"), "hp":40, "atk":45, "def":35, "rarity":1, "habitats":["tall_grass","forest"]},
+	{"id":9,  "name":"Abra",       "sprite":"res://assets/sprites/63.png",  "type":"psychic",  "pokeapi":63,  "color":Color("#ec407a"), "hp":38, "atk":70, "def":28, "rarity":2, "habitats":["town","path"]},
+	{"id":10, "name":"Sandshrew",  "sprite":"res://assets/sprites/27.png",  "type":"ground",   "pokeapi":27,  "color":Color("#a1887f"), "hp":55, "atk":55, "def":50, "rarity":1, "habitats":["sand","cave","path"]},
+	{"id":11, "name":"Pidgey",     "sprite":"res://assets/sprites/16.png",  "type":"flying",   "pokeapi":16,  "color":Color("#90caf9"), "hp":42, "atk":55, "def":30, "rarity":1, "habitats":["grass","mountain","forest"]},
+	{"id":12, "name":"Murkrow",    "sprite":"res://assets/sprites/198.png", "type":"dark",     "pokeapi":198, "color":Color("#455a64"), "hp":60, "atk":65, "def":55, "rarity":2, "habitats":["cave","forest"]},
+	{"id":13, "name":"Aron",       "sprite":"res://assets/sprites/304.png", "type":"steel",    "pokeapi":304, "color":Color("#b0bec5"), "hp":65, "atk":60, "def":80, "rarity":3, "habitats":["mountain","cave"]},
+	{"id":14, "name":"Dratini",    "sprite":"res://assets/sprites/147.png", "type":"dragon",   "pokeapi":147, "color":Color("#26c6da"), "hp":55, "atk":80, "def":50, "rarity":3, "habitats":["forest"]},
+	{"id":15, "name":"Clefairy",   "sprite":"res://assets/sprites/35.png",  "type":"fairy",    "pokeapi":35,  "color":Color("#f48fb1"), "hp":50, "atk":45, "def":45, "rarity":2, "habitats":["grass","tall_grass","town"]},
+	{"id":16, "name":"Arcanine",   "sprite":"res://assets/sprites/59.png",  "type":"fire",     "pokeapi":59,  "color":Color("#ff7043"), "hp":35, "atk":90, "def":25, "rarity":3, "habitats":["cave","sand"]},
+	{"id":17, "name":"Gyarados",   "sprite":"res://assets/sprites/130.png", "type":"water",    "pokeapi":130, "color":Color("#1565c0"), "hp":70, "atk":65, "def":70, "rarity":3, "habitats":["beach"]},
+	{"id":18, "name":"Raichu",     "sprite":"res://assets/sprites/26.png",  "type":"electric", "pokeapi":26,  "color":Color("#f9a825"), "hp":60, "atk":85, "def":40, "rarity":3, "habitats":["mountain"]},
+	{"id":19, "name":"Mewtwo",     "sprite":"res://assets/sprites/150.png", "type":"psychic",  "pokeapi":150, "color":Color("#e0e0e0"), "hp":80, "atk":100, "def":80, "rarity":4, "habitats":["*"]},
+	{"id":20, "name":"Darkrai",    "sprite":"res://assets/sprites/491.png", "type":"dark",     "pokeapi":491, "color":Color("#1a1a2e"), "hp":100, "atk":110, "def":90, "rarity":4, "habitats":["*"]},
 ]
 
 # Type effectiveness chart
@@ -89,3 +89,15 @@ func weighted_random_pick(pool: Array[Dictionary]) -> Dictionary:
 		if roll <= 0:
 			return s
 	return pool.back()
+
+var _sprite_cache: Dictionary = {}
+
+func get_sprite_texture(species_id: int) -> Texture2D:
+	if species_id in _sprite_cache:
+		return _sprite_cache[species_id]
+	var s = get_species(species_id)
+	if s.is_empty() or not s.has("sprite"):
+		return null
+	var tex = load(s["sprite"])
+	_sprite_cache[species_id] = tex
+	return tex

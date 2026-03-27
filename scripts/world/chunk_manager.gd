@@ -97,3 +97,18 @@ func get_all_town_chunks() -> Array:
 		if chunk.is_town:
 			towns.append({"name": chunk.town_name, "chunk_pos": cpos})
 	return towns
+
+func get_nearby_pokemon(world_pos: Vector2, radius: float = 16.0) -> Array:
+	var results = []
+	# Check current chunk and adjacent
+	for dy in range(-1, 2):
+		for dx in range(-1, 2):
+			var cx = floori(world_pos.x / (CHUNK_SIZE * TILE_SIZE)) + dx
+			var cy = floori(world_pos.y / (CHUNK_SIZE * TILE_SIZE)) + dy
+			var cpos = Vector2i(cx, cy)
+			if cpos in loaded_chunks:
+				var chunk = loaded_chunks[cpos]
+				for child in chunk.get_children():
+					if child.has_method("setup") and child.global_position.distance_to(world_pos) < radius:
+						results.append(child)
+	return results
