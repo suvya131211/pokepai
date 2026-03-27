@@ -11,6 +11,9 @@ var pokedex
 var inventory_ui
 var day_night
 var weather
+var title_screen
+var story_dialog
+var ui_layer: CanvasLayer
 
 # Roaming legendaries
 var legendary1_pos: Vector2
@@ -27,6 +30,8 @@ var HUDScript = preload("res://scripts/ui/hud.gd")
 var BattleScript = preload("res://scripts/battle/battle.gd")
 var PokedexScript = preload("res://scripts/ui/pokedex.gd")
 var InventoryScript = preload("res://scripts/ui/inventory_ui.gd")
+var TitleScript = preload("res://scripts/ui/title_screen.gd")
+var DialogScript = preload("res://scripts/ui/story_dialog.gd")
 
 func _ready() -> void:
 	# Give player a starter
@@ -63,22 +68,61 @@ func _ready() -> void:
 	add_child(battle_layer)
 	battle_scene.battle_ended.connect(_on_battle_ended)
 
+	# UI layer (pokedex, inventory, story dialog)
+	ui_layer = CanvasLayer.new()
+	ui_layer.layer = 25
+	add_child(ui_layer)
+
 	# Pokedex (overlay)
 	pokedex = PokedexScript.new()
 	pokedex.set_anchors_preset(Control.PRESET_FULL_RECT)
-	var ui_layer := CanvasLayer.new()
-	ui_layer.layer = 25
 	ui_layer.add_child(pokedex)
-	add_child(ui_layer)
 
 	# Inventory (overlay)
 	inventory_ui = InventoryScript.new()
 	inventory_ui.set_anchors_preset(Control.PRESET_FULL_RECT)
 	ui_layer.add_child(inventory_ui)
 
+	# Story dialog (reusable, on UI layer)
+	story_dialog = DialogScript.new()
+	story_dialog.set_anchors_preset(Control.PRESET_FULL_RECT)
+	ui_layer.add_child(story_dialog)
+
 	# Init legendary positions
 	legendary1_pos = Vector2(randf_range(-500, 500), randf_range(-500, 500))
 	legendary2_pos = Vector2(randf_range(-500, 500), randf_range(-500, 500))
+
+	# Connect player town signal if available
+	if player.has_signal("entered_town"):
+		player.entered_town.connect(_on_enter_town)
+
+	# Title screen (topmost layer)
+	var title_layer := CanvasLayer.new()
+	title_layer.layer = 30
+	add_child(title_layer)
+	title_screen = TitleScript.new()
+	title_screen.set_anchors_preset(Control.PRESET_FULL_RECT)
+	title_layer.add_child(title_screen)
+	title_screen.start_game.connect(_on_title_done)
+	GameManager.change_state(GameManager.GameState.PAUSED)
+
+func _on_title_done() -> void:
+	GameManager.change_state(GameManager.GameState.WORLD)
+	# Professor Willow intro dialog
+	story_dialog.show_dialog("Prof. Willow", [
+		"Welcome to the world of Pokemon!",
+		"I'm Professor Willow. I study Pokemon in the wild.",
+		"A dark force has awakened... VOIDREX threatens our world.",
+		"Only by finding the legendary COSMEON can we restore balance.",
+		"Take this Pikachu and begin your journey!",
+		"Catch Pokemon, grow stronger, and save us all!",
+	])
+
+func _on_enter_town(town_info: Dictionary) -> void:
+	story_dialog.show_dialog("", [
+		"You've discovered %s!" % town_info["name"],
+		"This town has been added to your fast-travel map.",
+	])
 
 func _process(delta: float) -> void:
 	if GameManager.state == GameManager.GameState.WORLD:
@@ -116,6 +160,23 @@ func _on_battle_ended(result_str: String, wild) -> void:
 			GameManager.pokemon_caught.emit(wild)
 			player.follower_pokemon = wild
 			player._follower_pos = player.global_position
+			# Legendary catch story dialogs
+			if wild.id == 19:  # Mewtwo
+				GameManager.change_state(GameManager.GameState.WORLD)
+				story_dialog.show_dialog("???", [
+					"You've captured MEWTWO!",
+					"Its psychic power resonates with hope...",
+					"The balance of the world shifts in your favor.",
+				])
+				return
+			elif wild.id == 20:  # Darkrai
+				GameManager.change_state(GameManager.GameState.WORLD)
+				story_dialog.show_dialog("???", [
+					"DARKRAI has been caught!",
+					"The darkness recedes... The world is saved!",
+					"Congratulations, Pokemon Master!",
+				])
+				return
 		"defeated", "fled":
 			pass
 	GameManager.change_state(GameManager.GameState.WORLD)
