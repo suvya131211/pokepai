@@ -196,34 +196,12 @@ func _process(delta):
             if message_timer > 0:
                 message_timer -= delta
                 if message_timer <= 0:
-                    # Apply poison chip to wild
-                    if wild_pokemon.status == "poisoned":
-                        var chip = maxi(1, wild_pokemon.max_hp / 8)
-                        wild_pokemon.hp = maxi(0, wild_pokemon.hp - chip)
-                        message = "%s is hurt by poison!" % wild_pokemon.pokemon_name
-                        wild_flash = 0.7
-                        message_timer = 1.0
-                        # Check if wild fainted from poison
-                        if not wild_pokemon.is_alive():
-                            _on_wild_fainted()
-                            return
-                    # Apply poison chip to player
-                    if player_pokemon and player_pokemon.status == "poisoned":
-                        var chip = maxi(1, player_pokemon.max_hp / 8)
-                        player_pokemon.hp = maxi(0, player_pokemon.hp - chip)
-                        player_flash = 0.7
-                        if message_timer <= 0:
-                            message = "%s is hurt by poison!" % player_pokemon.pokemon_name
-                            message_timer = 1.0
-                            if not player_pokemon.is_alive():
-                                _on_player_fainted()
-                                return
-                    if message_timer <= 0:
-                        if player_pokemon and not player_pokemon.is_alive():
-                            _on_player_fainted()
-                        else:
-                            phase = Phase.MENU
-                            message = "What will %s do?" % (player_pokemon.pokemon_name if player_pokemon else "you")
+                    # After wild attack message finishes, return to menu
+                    if player_pokemon and not player_pokemon.is_alive():
+                        _on_player_fainted()
+                    else:
+                        phase = Phase.MENU
+                        message = "What will %s do?" % (player_pokemon.pokemon_name if player_pokemon else "you")
 
         Phase.CATCH_THROW:
             ball_pos += ball_vel * delta
@@ -467,6 +445,7 @@ func _player_attack_move(move_index: int):
         var eff_text = (" " + dmg_data["text"]) if dmg_data["text"] != "" else ""
         message = "%s attacks! %d dmg.%s" % [player_pokemon.pokemon_name, dmg_data["damage"], eff_text]
 
+    _apply_end_of_turn_effects()
     message_timer = 1.5
 
 func _wild_attack():
@@ -509,6 +488,17 @@ func _wild_attack():
     else:
         message = "%s used %s!%s" % [wild_pokemon.pokemon_name, mname if mname != "" else "an attack", eff_text]
     message_timer = 1.5
+
+func _apply_end_of_turn_effects():
+    # Poison chip damage at end of turn
+    if wild_pokemon and wild_pokemon.status == "poisoned" and wild_pokemon.is_alive():
+        var chip = maxi(1, wild_pokemon.max_hp / 8)
+        wild_pokemon.hp = maxi(0, wild_pokemon.hp - chip)
+        wild_flash = 0.5
+    if player_pokemon and player_pokemon.status == "poisoned" and player_pokemon.is_alive():
+        var chip = maxi(1, player_pokemon.max_hp / 8)
+        player_pokemon.hp = maxi(0, player_pokemon.hp - chip)
+        player_flash = 0.5
 
 func _on_wild_fainted():
     var xp_gain = wild_pokemon.level * 10

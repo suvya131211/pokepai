@@ -30,6 +30,13 @@ var weather_system
 
 var current_npc_battle_data = null
 
+var area_name_display: String = ""
+var area_name_timer: float = 0.0
+
+func _show_area_name(name: String):
+	area_name_display = name
+	area_name_timer = 2.0
+
 func _ready():
 	# Area manager
 	area_manager = AreaManagerScript.new()
@@ -150,6 +157,10 @@ func _start_adventure():
 	GameManager.change_state(GameManager.GameState.WORLD)
 
 func _process(_delta):
+	if area_name_timer > 0:
+		area_name_timer -= _delta
+		if area_name_timer <= 0:
+			area_name_display = ""
 	if GameManager.state == GameManager.GameState.WORLD:
 		if Input.is_action_just_pressed("open_pokedex"):
 			pokedex.toggle()
@@ -203,8 +214,8 @@ func _on_exit_entered(exit_data):
 	elif sx >= area_w - 2: sx = area_w - 4
 	player.global_position = Vector2(sx * 16 + 8, sy * 16 + 8)
 	player.exit_cooldown = 1.5
-	# Show area name briefly
-	story_dialog.show_dialog("", [target_area])
+	# Show area name as a non-blocking notification
+	_show_area_name(target_area)
 
 func _on_npc_dialog(speaker, messages):
 	story_dialog.show_dialog(speaker, messages)
@@ -279,7 +290,23 @@ func _on_battle_ended(result_str, wild):
 				current_npc_battle_data = null
 		"fled":
 			pass
+	# Offer healing if player Pokemon is hurt and has berries
+	var inv = player.get_node("Inventory")
+	if player_pokemon_hurt() and inv.berries.get("razz", 0) > 0:
+		var pkmn = GameManager.party[0]
+		pkmn.hp = mini(pkmn.max_hp, pkmn.hp + int(pkmn.max_hp * 0.3))
+		inv.berries["razz"] -= 1
+		story_dialog.show_dialog("", [
+			"%s has %d/%d HP." % [pkmn.pokemon_name, pkmn.hp, pkmn.max_hp],
+			"Used a Razz Berry to heal!",
+		])
 	GameManager.change_state(GameManager.GameState.WORLD)
+
+func player_pokemon_hurt() -> bool:
+	if GameManager.party.size() > 0:
+		var p = GameManager.party[0]
+		return p.hp < p.max_hp
+	return false
 
 func _heal_party():
 	for pkmn in GameManager.party:
