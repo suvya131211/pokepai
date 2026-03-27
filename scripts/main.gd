@@ -32,6 +32,7 @@ var PokedexScript = preload("res://scripts/ui/pokedex.gd")
 var InventoryScript = preload("res://scripts/ui/inventory_ui.gd")
 var TitleScript = preload("res://scripts/ui/title_screen.gd")
 var DialogScript = preload("res://scripts/ui/story_dialog.gd")
+var InstructionsScript = preload("res://scripts/ui/instructions_panel.gd")
 
 func _ready() -> void:
 	# Give player a starter
@@ -87,6 +88,12 @@ func _ready() -> void:
 	story_dialog = DialogScript.new()
 	story_dialog.set_anchors_preset(Control.PRESET_FULL_RECT)
 	ui_layer.add_child(story_dialog)
+
+	# Instructions panel
+	var instructions = InstructionsScript.new()
+	instructions.set_anchors_preset(Control.PRESET_FULL_RECT)
+	instructions.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	hud.add_child(instructions)
 
 	# Init legendary positions
 	legendary1_pos = Vector2(randf_range(-500, 500), randf_range(-500, 500))
@@ -155,31 +162,37 @@ func _start_battle(wild) -> void:
 func _on_battle_ended(result_str: String, wild) -> void:
 	match result_str:
 		"caught":
-			GameManager.party.append(wild)
-			GameManager.add_to_pokedex(wild.id, true)
-			GameManager.pokemon_caught.emit(wild)
-			player.follower_pokemon = wild
-			player._follower_pos = player.global_position
-			# Legendary catch story dialogs
-			if wild.id == 19:  # Mewtwo
-				GameManager.change_state(GameManager.GameState.WORLD)
-				story_dialog.show_dialog("???", [
-					"You've captured MEWTWO!",
-					"Its psychic power resonates with hope...",
-					"The balance of the world shifts in your favor.",
-				])
-				return
-			elif wild.id == 20:  # Darkrai
-				GameManager.change_state(GameManager.GameState.WORLD)
-				story_dialog.show_dialog("???", [
-					"DARKRAI has been caught!",
-					"The darkness recedes... The world is saved!",
-					"Congratulations, Pokemon Master!",
-				])
-				return
-		"defeated", "fled":
+			_handle_caught(wild)
+		"defeated":
+			_check_evolution()
+		"fled":
 			pass
 	GameManager.change_state(GameManager.GameState.WORLD)
+
+func _handle_caught(wild) -> void:
+	GameManager.party.append(wild)
+	GameManager.add_to_pokedex(wild.id, true)
+	GameManager.pokemon_caught.emit(wild)
+	player.follower_pokemon = wild
+	player._follower_pos = player.global_position
+	# Legendary catch story dialogs
+	if wild.id == 19:  # Mewtwo
+		GameManager.change_state(GameManager.GameState.WORLD)
+		story_dialog.show_dialog("???", [
+			"You've captured MEWTWO!",
+			"Its psychic power resonates with hope...",
+			"The balance of the world shifts in your favor.",
+		])
+	elif wild.id == 20:  # Darkrai
+		GameManager.change_state(GameManager.GameState.WORLD)
+		story_dialog.show_dialog("???", [
+			"DARKRAI has been caught!",
+			"The darkness recedes... The world is saved!",
+			"Congratulations, Pokemon Master!",
+		])
+
+func _check_evolution() -> void:
+	pass  # Placeholder for future evolution logic
 
 func _update_legendaries(delta: float) -> void:
 	if legendary1_active:

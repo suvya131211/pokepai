@@ -1,0 +1,24 @@
+[2026-03-27T08:01:44.620Z] [log] [Feature Flags] Evaluated for user: {userId: 98d9daca-d0bf-47a2-8cd1-325bd003b9a7, userHash: 33, flags: Object}
+[2026-03-27T08:01:44.893Z] [log] [Playwire] Applying config for path: {pathname: /play/, adExperience: in-game, config: Object}
+[2026-03-27T08:01:44.898Z] [log] [Playwire] RAMP loaded, dispatching 'rampLoaded' event
+[2026-03-27T08:01:44.898Z] [log] [Playwire] Initial load, applying config
+[2026-03-27T08:01:45.038Z] [error] Failed to load resource: the server responded with a status of 404 ()
+[2026-03-27T08:01:45.050Z] [error] Failed to load resource: the server responded with a status of 404 ()
+[2026-03-27T08:01:45.546Z] [error] Failed to load resource: net::ERR_CERT_AUTHORITY_INVALID
+[2026-03-27T08:01:46.005Z] [warning] [GPT] Using deprecated googletag.encryptedSignalProviders. Please use googletag.secureSignalProviders instead.
+https://goo.gle/gpt-message#155
+[2026-03-27T08:01:50.935Z] [error] Failed to load resource: the server responded with a status of 429 ()
+[2026-03-27T08:01:52.712Z] [warning] The resource https://cdn.intergi.com/prebid/prebid.js.br was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally.
+[2026-03-27T08:01:55.777Z] [warning] The resource https://cdn.intergi.com/prebid/prebid.js.br was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally.
+[2026-03-27T08:01:56.388Z] [error] Failed to load resource: the server responded with a status of 400 (Bad Request)
+[2026-03-27T08:02:00.207Z] [warning] The resource https://cdn.intergi.com/prebid/prebid.js.br was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally.
+[2026-03-27T08:02:05.948Z] [warning] The resource https://cdn.intergi.com/prebid/prebid.js.br was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally.
+[2026-03-27T08:02:07.322Z] [error] Failed to load resource: net::ERR_CERT_DATE_INVALID
+[2026-03-27T08:02:11.023Z] [warning] The resource https://cdn.intergi.com/prebid/prebid.js.br was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally.
+[2026-03-27T08:02:11.513Z] [error] Failed to load resource: net::ERR_CONNECTION_RESET
+[2026-03-27T08:02:13.371Z] [log] {id5id: Object}
+[2026-03-27T08:02:13.371Z] [log] prebid js processing time: 1593 ms
+[2026-03-27T08:02:16.358Z] [error] Failed to load resource: net::ERR_CONNECTION_CLOSED
+[2026-03-27T08:02:19.359Z] [warning] The resource https://cdn.intergi.com/prebid/prebid.js.br was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally.
+[2026-03-27T08:02:24.671Z] [warning] The resource https://cdn.intergi.com/prebid/prebid.js.br was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally.
+[2026-03-27T08:31:52.507Z] [warning] The resource https://cdn.intergi.com/prebid/prebid.js.br was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally.

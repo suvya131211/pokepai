@@ -2,7 +2,7 @@ extends CanvasModulate
 class_name DayNightCycle
 
 var time: float = 8.0  # hours (0-24)
-var speed: float = 1.0  # 1 game-hour per real second
+var speed: float = 0.0133  # 24 hours / 1800 seconds = 30 min per full day
 
 func _process(delta: float) -> void:
 	if GameManager.state != GameManager.GameState.WORLD:

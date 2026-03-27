@@ -33,11 +33,11 @@ func _draw() -> void:
 		draw_circle(Vector2(0, bob_y), 8, pokemon_data.get("color", Color.WHITE))
 
 	# Shadow
-	draw_ellipse(Vector2(0, 10), Vector2(8, 3), Color(0, 0, 0, 0.3))
+	_draw_shadow(Vector2(0, 10), Vector2(8, 3), Color(0, 0, 0, 0.3))
 
-func draw_ellipse(center: Vector2, size: Vector2, color: Color) -> void:
+func _draw_shadow(center: Vector2, sz: Vector2, color: Color) -> void:
 	var points: PackedVector2Array = []
 	for i in 16:
 		var angle = (float(i) / 16.0) * TAU
-		points.append(center + Vector2(cos(angle) * size.x, sin(angle) * size.y))
+		points.append(center + Vector2(cos(angle) * sz.x, sin(angle) * sz.y))
 	draw_colored_polygon(points, color)
