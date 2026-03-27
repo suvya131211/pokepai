@@ -91,16 +91,18 @@ func _ready():
     mouse_filter = Control.MOUSE_FILTER_STOP
 
 func start(party: Array, wild, inv = null):
+    # Reset trainer battle state
+    is_trainer_battle = false
+    trainer_name = ""
+    trainer_team = []
+    trainer_current = 0
+
     player_pokemon = party[0] if party.size() > 0 else null
     wild_pokemon = wild
     inventory = inv
     wild_sprite = PokemonDB.get_sprite_texture(wild.id)
-    if wild_sprite == null:
-        push_warning("Failed to load wild sprite for id %d" % wild.id)
     if player_pokemon:
         player_sprite = PokemonDB.get_sprite_texture(player_pokemon.id)
-        if player_sprite == null:
-            push_warning("Failed to load player sprite for id %d" % player_pokemon.id)
     phase = Phase.INTRO
     message = "A wild %s appeared!" % wild.pokemon_name
     intro_timer = 2.0
@@ -112,7 +114,13 @@ func start(party: Array, wild, inv = null):
     shake_count = 0
     shake_timer = 0.0
     poison_timer = 0.0
+    move_anim_timer = 0.0
+    move_particles = []
     visible = true
+    print("[BATTLE] Started wild battle: %s (Lv.%d) vs %s (Lv.%d)" % [
+        wild.pokemon_name, wild.level,
+        player_pokemon.pokemon_name if player_pokemon else "NONE",
+        player_pokemon.level if player_pokemon else 0])
 
 func set_inventory(inv):
     inventory = inv
@@ -122,6 +130,12 @@ func start_trainer_battle(t_name: String, team: Array):
     trainer_name = t_name
     trainer_team = team
     trainer_current = 0
+
+    # Set player pokemon from party
+    player_pokemon = GameManager.party[0] if GameManager.party.size() > 0 else null
+    if player_pokemon:
+        player_sprite = PokemonDB.get_sprite_texture(player_pokemon.id)
+
     if trainer_team.size() > 0:
         wild_pokemon = trainer_team[trainer_current]
         wild_sprite = PokemonDB.get_sprite_texture(wild_pokemon.id)
@@ -167,6 +181,7 @@ func _process(delta):
             if intro_timer <= 0:
                 phase = Phase.MENU
                 message = "What will %s do?" % (player_pokemon.pokemon_name if player_pokemon else "you")
+                print("[BATTLE] Phase → MENU. Click FIGHT or press F to attack.")
 
         Phase.PLAYER_ATK:
             if message_timer > 0:
@@ -257,11 +272,11 @@ func _input(event):
         return
     if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
         get_viewport().set_input_as_handled()
-        # Transform mouse position to viewport coords
         var pos = get_viewport().get_mouse_position()
         var vp = get_viewport_rect().size
         var w = vp.x
         var h = vp.y
+        print("[BATTLE] Click at %s, phase=%d, viewport=%s" % [str(pos), phase, str(vp)])
         match phase:
             Phase.MENU:
                 _handle_menu_click(pos, w, h)
@@ -295,6 +310,7 @@ func _input(event):
                 message = "What will %s do?" % (player_pokemon.pokemon_name if player_pokemon else "you")
 
 func _handle_menu_action(action: String):
+    print("[BATTLE] Menu action: %s" % action)
     match action:
         "fight":
             if player_pokemon and player_pokemon.known_moves.size() > 0:

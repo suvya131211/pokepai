@@ -169,9 +169,12 @@ func _process(_delta):
 						_start_gym_battle(gl)
 
 func _on_wild_encounter(encounter_data):
+	if GameManager.state != GameManager.GameState.WORLD:
+		return  # Don't trigger encounters during other states
 	var species_id = encounter_data.get("species_id", 1)
 	var level = randi_range(encounter_data.get("min_level", 2), encounter_data.get("max_level", 5))
 	var wild = PokemonScript.new(species_id, level)
+	print("[MAIN] Wild encounter: %s Lv.%d, party size: %d" % [wild.pokemon_name, level, GameManager.party.size()])
 	GameManager.add_to_pokedex(wild.id)
 	GameManager.change_state(GameManager.GameState.BATTLE)
 	var inv = player.get_node("Inventory")

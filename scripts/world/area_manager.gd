@@ -66,10 +66,16 @@ func check_npc(world_x: float, world_y: float) -> Dictionary:
 					return npc
 	return {}
 
+var _last_encounter_tile: Vector2i = Vector2i(-999, -999)
+
 func check_encounter(tile_x: int, tile_y: int) -> Dictionary:
 	if current_area and current_area.is_encounter_tile(tile_x, tile_y):
-		if randf() < 0.08:  # ~8% chance per step on encounter tile
-			return current_area.spawn_encounter()
+		var current_tile = Vector2i(tile_x, tile_y)
+		# Only check once per new tile stepped on (not per frame)
+		if current_tile != _last_encounter_tile:
+			_last_encounter_tile = current_tile
+			if randf() < 0.12:  # 12% chance per new tile
+				return current_area.spawn_encounter()
 	return {}
 
 func check_item(world_x: float, world_y: float) -> Dictionary:
