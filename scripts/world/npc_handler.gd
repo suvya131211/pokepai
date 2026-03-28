@@ -25,7 +25,10 @@ func interact_with_npc(npc: Dictionary, area_name: String) -> void:
             npc_dialog_start.emit(npc.get("name", "Prof. Oak"), npc.get("dialog", ["Welcome!"]))
 
         "nurse":
-            npc_dialog_start.emit("Nurse Joy", ["Welcome! Let me heal your Pokemon...", "Your Pokemon have been fully healed!", "Come back anytime!"])
+            var story_lines = StoryEvents.get_npc_story("Nurse Joy", area_name)
+            if story_lines.is_empty():
+                story_lines = ["Welcome! Let me heal your Pokemon.", "Your Pokemon have been fully healed!", "Come back anytime!"]
+            npc_dialog_start.emit("Nurse Joy", story_lines)
             heal_pokemon.emit()
 
         "shop":

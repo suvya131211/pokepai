@@ -173,6 +173,7 @@ func _start_adventure():
 	var spawn = area_manager.load_area("Pallet Town")
 	player.global_position = Vector2(spawn["x"] * 16 + 8, spawn["y"] * 16 + 8)
 	GameManager.change_state(GameManager.GameState.WORLD)
+	_trigger_area_story("Pallet Town")
 
 func _process(_delta):
 	if area_name_timer > 0:
@@ -286,6 +287,29 @@ func _on_exit_entered(exit_data):
 	npc_interaction_cooldown = 3.0  # prevent NPC auto-trigger on area load
 	# Show area name as a non-blocking notification
 	_show_area_name(target_area)
+	# Trigger story events for new area
+	_trigger_area_story(target_area)
+
+func _trigger_area_story(area_name: String):
+	var events = StoryEvents.get_area_events(area_name)
+	if events.is_empty():
+		return
+	# Chain dialogs — show first, then chain the rest via callbacks
+	_pending_story_events = events.duplicate()
+	_show_next_story_event()
+
+var _pending_story_events: Array = []
+
+func _show_next_story_event():
+	if _pending_story_events.is_empty():
+		return
+	var event = _pending_story_events.pop_front()
+	var speaker = event.get("speaker", "")
+	var lines = event.get("lines", [])
+	if _pending_story_events.is_empty():
+		story_dialog.show_dialog(speaker, lines)
+	else:
+		story_dialog.show_dialog(speaker, lines, Callable(self, "_show_next_story_event"))
 
 func _on_npc_dialog(speaker, messages):
 	npc_interaction_cooldown = 2.0  # prevent re-trigger after dialog
@@ -355,7 +379,9 @@ func _on_battle_ended(result_str, wild):
 					npc_handler.mark_elite4_defeated(current_npc_battle_data.get("name", ""))
 				if current_npc_battle_data.get("is_gym", false):
 					var badge = current_npc_battle_data.get("badge", "")
+					var gym_name = current_npc_battle_data.get("name", "")
 					npc_handler.mark_gym_defeated(badge)
+					StoryEvents.on_gym_defeated(gym_name, badge)
 					var win_msgs = current_npc_battle_data.get("win_dialog", [])
 					if win_msgs.size() > 0:
 						story_dialog.show_dialog(current_npc_battle_data.get("name", ""), win_msgs)

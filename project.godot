@@ -21,6 +21,7 @@ GameManager="*res://scripts/autoload/game_manager.gd"
 PokemonDB="*res://scripts/autoload/pokemon_db.gd"
 MoveData="*res://scripts/data/move_data.gd"
 EventTracker="*res://scripts/autoload/event_tracker.gd"
+StoryEvents="*res://scripts/data/story_events.gd"
 
 [display]
 
