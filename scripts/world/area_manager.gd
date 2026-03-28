@@ -11,9 +11,10 @@ func _ready():
 	area_data_source = AreaDataScript.new()
 
 func load_area(area_name: String, player_x: int = -1, player_y: int = -1) -> Dictionary:
-	# Remove old area
+	# Remove old area immediately
 	if current_area:
-		current_area.queue_free()
+		remove_child(current_area)
+		current_area.free()
 		current_area = null
 
 	# Get area data

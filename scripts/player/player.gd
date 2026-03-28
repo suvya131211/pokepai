@@ -97,6 +97,7 @@ func get_current_tile() -> int:
 
 func _ready():
 	z_index = 10  # draw above area tiles
+	add_to_group("player")
 
 func _draw() -> void:
 	# Player body (16x16 centered)

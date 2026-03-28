@@ -62,7 +62,13 @@ func setup(data: Dictionary) -> void:
 	area_type = data.get("type", "route")
 	width = data.get("width", 30)
 	height = data.get("height", 20)
-	tiles = PackedInt32Array(data.get("tiles", []))
+	var raw_tiles = data.get("tiles", [])
+	if raw_tiles is PackedInt32Array:
+		tiles = raw_tiles
+	else:
+		tiles = PackedInt32Array()
+		for t in raw_tiles:
+			tiles.append(t)
 	exits = data.get("exits", [])
 	npcs = data.get("npcs", [])
 	encounter_table = data.get("encounters", [])
@@ -71,6 +77,9 @@ func setup(data: Dictionary) -> void:
 	has_shop = data.get("shop", false)
 	gym_leader = data.get("gym_leader", {})
 	requires_hm = data.get("requires_hm", "")
+	print("[AREA] setup: %s, tiles: %d (expected %d), walkable at (14,14): %s" % [
+		area_name, tiles.size(), width * height,
+		str(is_walkable(14, 14))])
 	queue_redraw()
 
 func get_tile(x: int, y: int) -> int:
