@@ -25,8 +25,8 @@ func interact_with_npc(npc: Dictionary, area_name: String) -> void:
             npc_dialog_start.emit(npc.get("name", "Prof. Oak"), npc.get("dialog", ["Welcome!"]))
 
         "nurse":
+            npc_dialog_start.emit("Nurse Joy", ["Welcome! Let me heal your Pokemon...", "Your Pokemon have been fully healed!", "Come back anytime!"])
             heal_pokemon.emit()
-            npc_dialog_start.emit("Nurse Joy", ["Your Pokemon have been fully healed!", "Come back anytime!"])
 
         "shop":
             npc_dialog_start.emit("Shopkeeper", ["Welcome! Here are some items."])

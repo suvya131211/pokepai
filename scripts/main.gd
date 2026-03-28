@@ -13,6 +13,7 @@ var StarterScript = preload("res://scripts/ui/starter_select.gd")
 var InstructionsScript = preload("res://scripts/ui/instructions_panel.gd")
 var DayNightScript = preload("res://scripts/world/day_night.gd")
 var WeatherScript = preload("res://scripts/world/weather.gd")
+var MinimapScript = preload("res://scripts/ui/minimap_overlay.gd")
 
 @onready var player = $World/Player
 
@@ -50,6 +51,7 @@ func _ready():
 	npc_handler.npc_dialog_start.connect(_on_npc_dialog)
 	npc_handler.npc_battle_start.connect(_on_npc_battle)
 	npc_handler.heal_pokemon.connect(_heal_party)
+	npc_handler.open_shop.connect(_on_shop)
 
 	# Day/Night
 	day_night = DayNightScript.new()
@@ -65,6 +67,15 @@ func _ready():
 	# HUD
 	hud = HUDScript.new()
 	add_child(hud)
+
+	# Add area_manager to group so minimap can find it
+	area_manager.add_to_group("area_manager")
+
+	# Minimap overlay
+	var minimap = MinimapScript.new()
+	minimap.set_anchors_preset(Control.PRESET_FULL_RECT)
+	minimap.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	hud.add_child(minimap)
 
 	# Instructions panel
 	var instructions = InstructionsScript.new()
@@ -174,16 +185,27 @@ func _process(_delta):
 			inventory_ui.toggle(player.get_node("Inventory"))
 		# NPC interaction (E key)
 		if Input.is_action_just_pressed("interact") and area_manager and npc_interaction_cooldown <= 0:
+			# Check regular NPCs first
 			var npc = area_manager.check_npc_facing(player.global_position.x, player.global_position.y, player.direction)
 			if not npc.is_empty():
 				npc_handler.interact_with_npc(npc, area_manager.get_current_area_name())
-				# Check gym leader separately
-				if area_manager.current_area and not area_manager.current_area.gym_leader.is_empty():
-					var gl = area_manager.current_area.gym_leader
-					var gl_x = gl.get("x", -1) * 16
-					var gl_y = gl.get("y", -1) * 16
-					if abs(player.global_position.x - gl_x) < 32 and abs(player.global_position.y - gl_y) < 32:
-						_start_gym_battle(gl)
+			# Check gym leader separately (independent of NPC list)
+			elif area_manager.current_area and not area_manager.current_area.gym_leader.is_empty():
+				var gl = area_manager.current_area.gym_leader
+				var gl_x = gl.get("x", -1)
+				var gl_y = gl.get("y", -1)
+				var player_tile_x = int(player.global_position.x / 16)
+				var player_tile_y = int(player.global_position.y / 16)
+				var face_dx = 0
+				var face_dy = 0
+				match player.direction:
+					"up": face_dy = -1
+					"down": face_dy = 1
+					"left": face_dx = -1
+					"right": face_dx = 1
+				if (player_tile_x + face_dx == gl_x and player_tile_y + face_dy == gl_y) or \
+				   (player_tile_x == gl_x and player_tile_y == gl_y):
+					_start_gym_battle(gl)
 
 func _on_wild_encounter(encounter_data):
 	if GameManager.state != GameManager.GameState.WORLD:
@@ -336,6 +358,15 @@ func _on_battle_ended(result_str, wild):
 			])
 	npc_interaction_cooldown = 2.0  # 2 second cooldown after battle
 	GameManager.change_state(GameManager.GameState.WORLD)
+
+func _on_shop():
+	var inv = player.get_node("Inventory")
+	inv.balls["pokeball"] += 5
+	inv.balls["greatball"] += 2
+	story_dialog.show_dialog("Shopkeeper", [
+		"Here are some Pokeballs for your journey!",
+		"Got 5 Pokeballs and 2 Great Balls!",
+	])
 
 func player_pokemon_hurt() -> bool:
 	if GameManager.party.size() > 0:

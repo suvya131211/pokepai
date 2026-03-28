@@ -144,6 +144,8 @@ func _pewter_city() -> Dictionary:
 		for x in 30:
 			if x == 0 or x == 29 or y == 0:
 				row.append(TR)
+			elif x >= 27 and x <= 28 and y == 10:
+				row.append(P)  # path leading to Mt. Moon exit
 			elif x == 14 or x == 15:
 				row.append(P)
 			elif x >= 3 and x <= 8 and y >= 3 and y <= 6:
@@ -166,7 +168,7 @@ func _pewter_city() -> Dictionary:
 		"exits": [
 			{"x": 14, "y": 19, "target_area": "Route 1", "target_x": 14, "target_y": 1},
 			{"x": 15, "y": 19, "target_area": "Route 1", "target_x": 15, "target_y": 1},
-			{"x": 29, "y": 10, "target_area": "Mt. Moon", "target_x": 1, "target_y": 10},
+			{"x": 28, "y": 10, "target_area": "Mt. Moon", "target_x": 1, "target_y": 10},
 		],
 		"npcs": [
 			{"x": 22, "y": 4, "name": "Nurse Joy", "type": "nurse", "dialog": ["Welcome! Let me heal your Pokemon.", "Your Pokemon are fully healed!"]},
