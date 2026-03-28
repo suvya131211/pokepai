@@ -18,6 +18,36 @@ var status: String = ""  # "sleep" / "paralyzed" / "poisoned" / ""
 var known_moves: Array = []  # array of move dicts (with current_pp included)
 var move_pp: Array = []       # current PP for each move (mirrors known_moves current_pp)
 
+const NATURES = {
+	"Hardy":   {"up": "", "down": ""},
+	"Lonely":  {"up": "atk", "down": "def"},
+	"Brave":   {"up": "atk", "down": "spd"},
+	"Adamant": {"up": "atk", "down": "spa"},
+	"Naughty": {"up": "atk", "down": "spd"},
+	"Bold":    {"up": "def", "down": "atk"},
+	"Docile":  {"up": "", "down": ""},
+	"Relaxed": {"up": "def", "down": "spd"},
+	"Impish":  {"up": "def", "down": "spa"},
+	"Lax":     {"up": "def", "down": "spd"},
+	"Timid":   {"up": "spd", "down": "atk"},
+	"Hasty":   {"up": "spd", "down": "def"},
+	"Serious": {"up": "", "down": ""},
+	"Jolly":   {"up": "spd", "down": "spa"},
+	"Naive":   {"up": "spd", "down": "spd"},
+	"Modest":  {"up": "spa", "down": "atk"},
+	"Mild":    {"up": "spa", "down": "def"},
+	"Quiet":   {"up": "spa", "down": "spd"},
+	"Bashful": {"up": "", "down": ""},
+	"Rash":    {"up": "spa", "down": "spd"},
+	"Calm":    {"up": "spd", "down": "atk"},
+	"Gentle":  {"up": "spd", "down": "def"},
+	"Sassy":   {"up": "spd", "down": "spd"},
+	"Careful": {"up": "spd", "down": "spa"},
+	"Quirky":  {"up": "", "down": ""},
+}
+
+var nature: String = "Hardy"
+
 func _init(species_id: int, lvl: int = 1) -> void:
 	species = PokemonDB.get_species(species_id)
 	id = species_id
@@ -40,9 +70,22 @@ func _init(species_id: int, lvl: int = 1) -> void:
 			mdata["current_pp"] = mdata["pp"]
 			known_moves.append(mdata)
 			move_pp.append(mdata["pp"])
+	# Assign random nature and apply stat modifiers
+	var nature_names = NATURES.keys()
+	nature = nature_names[randi() % nature_names.size()]
+	_apply_nature()
 	print("[POKEMON] Created %s Lv.%d with %d moves: %s" % [
 		pokemon_name, level, known_moves.size(),
 		str(known_moves.map(func(m): return m.get("name", "?")))])
+
+func _apply_nature():
+	var n = NATURES.get(nature, {})
+	var up = n.get("up", "")
+	var down = n.get("down", "")
+	if up == "atk": atk = int(atk * 1.1)
+	elif up == "def": def_stat = int(def_stat * 1.1)
+	if down == "atk": atk = int(atk * 0.9)
+	elif down == "def": def_stat = int(def_stat * 0.9)
 
 func gain_xp(amount: int) -> bool:
 	xp += amount
@@ -111,7 +154,12 @@ func calc_damage_with_move(defender, move: Dictionary) -> Dictionary:
 	var eff_text = ""
 	if eff > 1.0: eff_text = "Super effective!"
 	elif eff < 1.0 and eff > 0: eff_text = "Not very effective..."
-	return {"damage": dmg, "effectiveness": eff, "text": eff_text, "move_name": move.get("name", "")}
+	# Critical hit (6.25% chance, 1.5x damage)
+	var is_crit = randf() < 0.0625
+	if is_crit:
+		dmg = int(dmg * 1.5)
+		eff_text += " Critical hit!"
+	return {"damage": dmg, "effectiveness": eff, "text": eff_text, "move_name": move.get("name", ""), "critical": is_crit}
 
 func _apply_status_move(defender, move: Dictionary) -> Dictionary:
 	# Accuracy check

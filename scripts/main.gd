@@ -296,6 +296,8 @@ func _on_exit_entered(exit_data):
 	player.global_position = Vector2(sx * 16 + 8, sy * 16 + 8)
 	player.exit_cooldown = 3.0
 	npc_interaction_cooldown = 3.0  # prevent NPC auto-trigger on area load
+	# Auto-save on area transition
+	SaveManager.save_game()
 	# Show area name as a non-blocking notification
 	_show_area_name(target_area)
 	# Trigger story events for new area
@@ -520,6 +522,54 @@ func _heal_party():
 		pkmn.status = ""
 		for move in pkmn.known_moves:
 			move["current_pp"] = move["pp"]
+
+func _unhandled_input(event):
+	if event is InputEventKey and event.pressed:
+		if event.keycode == KEY_F5:
+			_save_game()
+		elif event.keycode == KEY_F9:
+			_load_game()
+
+func _save_game():
+	if SaveManager.save_game():
+		story_dialog.show_dialog("", ["Game saved!"])
+
+func _load_game():
+	var data = SaveManager.load_game()
+	if data.is_empty():
+		story_dialog.show_dialog("", ["No save file found!"])
+		return
+	# Restore party
+	GameManager.party = SaveManager.deserialize_party(data.get("party", []))
+	GameManager.badges_earned = data.get("badges", 0)
+	GameManager.pokedex_caught = {}
+	for id in data.get("pokedex_caught", []):
+		GameManager.pokedex_caught[int(id)] = true
+	GameManager.pokedex_seen = {}
+	for id in data.get("pokedex_seen", []):
+		GameManager.pokedex_seen[int(id)] = true
+	GameManager.towns_visited = data.get("towns_visited", ["Starter Town"])
+	# Story flags
+	StoryEvents.flags = data.get("story_flags", StoryEvents.flags)
+	# NPC handler
+	if npc_handler:
+		npc_handler.defeated_trainers = data.get("defeated_trainers", {})
+		npc_handler.defeated_gyms = data.get("defeated_gyms", [])
+	# Inventory
+	var inv = player.get_node("Inventory")
+	var inv_data = data.get("inventory", {})
+	if inv and not inv_data.is_empty():
+		inv.balls = inv_data.get("balls", inv.balls)
+		inv.berries = inv_data.get("berries", inv.berries)
+	# Load area
+	var area_name = data.get("current_area", "Pallet Town")
+	var pos = data.get("player_pos", {"x": 232, "y": 168})
+	area_manager.load_area(area_name)
+	player.global_position = Vector2(pos["x"], pos["y"])
+	if GameManager.party.size() > 0:
+		player.follower_pokemon = GameManager.party[0]
+	GameManager.change_state(GameManager.GameState.WORLD)
+	story_dialog.show_dialog("", ["Game loaded!"])
 
 func _on_item_found(item_type: String):
 	if item_type in ["razz", "nanab", "pinap"]:
