@@ -121,6 +121,7 @@ func start(party: Array, wild, inv = null):
         wild.pokemon_name, wild.level,
         player_pokemon.pokemon_name if player_pokemon else "NONE",
         player_pokemon.level if player_pokemon else 0])
+    EventTracker.log_event("BATTLE_START", {"wild": wild.pokemon_name, "wild_lv": wild.level, "wild_hp": wild.max_hp, "player": player_pokemon.pokemon_name if player_pokemon else "NONE", "player_lv": player_pokemon.level if player_pokemon else 0, "player_moves": player_pokemon.known_moves.size() if player_pokemon else 0})
 
 func set_inventory(inv):
     inventory = inv
@@ -151,6 +152,7 @@ func start_trainer_battle(t_name: String, team: Array):
     shake_timer = 0.0
     poison_timer = 0.0
     visible = true
+    EventTracker.log_event("TRAINER_BATTLE_START", {"trainer": t_name, "team_size": team.size()})
 
 # ─── Process loop ─────────────────────────────────────────────────────────────
 func _process(delta):
@@ -239,6 +241,7 @@ func _process(delta):
             if message_timer > 0:
                 message_timer -= delta
                 if message_timer <= 0:
+                    EventTracker.log_event("BATTLE_END", {"result": result})
                     battle_ended.emit(result, wild_pokemon)
                     visible = false
 
@@ -255,6 +258,7 @@ func _input(event):
         var w = vp.x
         var h = vp.y
         print("[BATTLE] Click at %s, phase=%d, viewport=%s" % [str(pos), phase, str(vp)])
+        EventTracker.log_event("BATTLE_CLICK", {"pos": str(pos), "phase": phase, "viewport": str(vp)})
         match phase:
             Phase.MENU:
                 _handle_menu_click(pos, w, h)
@@ -298,6 +302,7 @@ func _handle_menu_action(action: String):
         action,
         player_pokemon.pokemon_name if player_pokemon else "NULL",
         player_pokemon.known_moves.size() if player_pokemon else 0])
+    EventTracker.log_event("BATTLE_ACTION", {"action": action, "phase": phase})
     match action:
         "fight":
             if player_pokemon and player_pokemon.known_moves.size() > 0:
@@ -415,6 +420,7 @@ func _player_attack_move(move_index: int):
         move_index, player_pokemon.pokemon_name if player_pokemon else "NULL",
         player_pokemon.hp if player_pokemon else 0,
         player_pokemon.max_hp if player_pokemon else 0])
+    EventTracker.log_event("PLAYER_ATTACK", {"move_index": move_index, "player_hp": player_pokemon.hp if player_pokemon else 0, "wild_hp": wild_pokemon.hp if wild_pokemon else 0})
     phase = Phase.PLAYER_ATK
     selected_move_index = move_index
     if player_pokemon == null:
@@ -431,6 +437,7 @@ func _player_attack_move(move_index: int):
             return
         dmg_data = player_pokemon.calc_damage_with_move(wild_pokemon, move)
         wild_pokemon.hp = maxi(0, wild_pokemon.hp - dmg_data["damage"])
+        EventTracker.log_event("DAMAGE_DEALT", {"target": "wild", "damage": dmg_data["damage"], "remaining_hp": wild_pokemon.hp, "move": dmg_data.get("move_name", ""), "effectiveness": dmg_data.get("text", "")})
         wild_shake = 1.0
         wild_flash = 1.0
         # Trigger move animation
@@ -449,6 +456,7 @@ func _player_attack_move(move_index: int):
         # Fallback: use first move or type-based
         dmg_data = player_pokemon.calc_damage(wild_pokemon)
         wild_pokemon.hp = maxi(0, wild_pokemon.hp - dmg_data["damage"])
+        EventTracker.log_event("DAMAGE_DEALT", {"target": "wild", "damage": dmg_data["damage"], "remaining_hp": wild_pokemon.hp, "move": dmg_data.get("move_name", ""), "effectiveness": dmg_data.get("text", "")})
         wild_shake = 1.0
         wild_flash = 1.0
         # Trigger move animation
@@ -486,6 +494,7 @@ func _wild_attack():
     else:
         dmg_data = wild_pokemon.calc_damage(player_pokemon)
     player_pokemon.hp = maxi(0, player_pokemon.hp - dmg_data["damage"])
+    EventTracker.log_event("DAMAGE_DEALT", {"target": "player", "damage": dmg_data["damage"], "remaining_hp": player_pokemon.hp, "move": dmg_data.get("move_name", "")})
     player_shake = 1.0
     player_flash = 1.0
     var mname = dmg_data.get("move_name", "")
@@ -518,6 +527,7 @@ func _apply_end_of_turn_effects():
 func _on_wild_fainted():
     var xp_gain = wild_pokemon.level * 10
     leveled_up = player_pokemon.gain_xp(xp_gain) if player_pokemon else false
+    EventTracker.log_event("WILD_FAINTED", {"name": wild_pokemon.pokemon_name, "xp_gained": xp_gain, "leveled_up": leveled_up})
 
     if is_trainer_battle:
         trainer_current += 1
@@ -558,6 +568,7 @@ func _on_wild_fainted():
         message_timer = 2.5
 
 func _on_player_fainted():
+    EventTracker.log_event("PLAYER_FAINTED", {"name": player_pokemon.pokemon_name})
     phase = Phase.END
     result = "fled"
     message = "%s fainted! You blacked out..." % player_pokemon.pokemon_name
@@ -626,6 +637,7 @@ func _evaluate_catch():
         else:
             break
 
+    EventTracker.log_event("CATCH_ATTEMPT", {"ball": ball_type_used, "catch_value": catch_value, "shakes": shakes, "wild_hp": wild_pokemon.hp, "max_hp": wild_pokemon.max_hp, "status": wild_pokemon.status})
     max_shakes = shakes
     shake_count = 0
     shake_timer = 0.55
@@ -640,6 +652,7 @@ func _evaluate_catch():
         message = "..."
 
 func _flee():
+    EventTracker.log_event("BATTLE_FLEE", {})
     phase = Phase.END
     result = "fled"
     message = "Got away safely!"

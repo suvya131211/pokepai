@@ -22,6 +22,7 @@ func show_dialog(speaker_name: String, msgs: Array, callback: Callable = Callabl
     char_timer = 0.0
     on_complete = callback
     visible = true
+    EventTracker.log_event("DIALOG_SHOW", {"speaker": speaker_name, "messages": msgs.size()})
     _input_cooldown = 0.3  # ignore input for 0.3s after showing
     GameManager.change_state(GameManager.GameState.PAUSED)
     queue_redraw()
@@ -52,6 +53,7 @@ func _unhandled_input(event):
             char_timer = 0.0
             if current_index >= messages.size():
                 visible = false
+                EventTracker.log_event("DIALOG_CLOSE", {"speaker": speaker})
                 GameManager.change_state(GameManager.GameState.WORLD)
                 if on_complete.is_valid():
                     on_complete.call()

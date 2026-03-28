@@ -120,6 +120,7 @@ func _ready():
 	GameManager.change_state(GameManager.GameState.PAUSED)
 
 func _on_title_done():
+	EventTracker.log_event("TITLE_DONE", {})
 	# Show Prof Oak intro
 	story_dialog.show_dialog("Prof. Oak", [
 		"Welcome to the world of Pokemon!",
@@ -143,6 +144,7 @@ func _on_starter_chosen(species_id: int):
 	GameManager.set_meta("rival_starter", rival_id)
 
 	var starter_name = PokemonDB.get_species(species_id).get("name", "Pokemon")
+	EventTracker.log_event("STARTER_CHOSEN", {"species_id": species_id, "name": starter_name})
 	story_dialog.show_dialog("Prof. Oak", [
 		"Excellent choice! %s is a wonderful partner!" % starter_name,
 		"Your rival chose the Pokemon with a type advantage... typical!",
@@ -151,6 +153,7 @@ func _on_starter_chosen(species_id: int):
 	], Callable(self, "_start_adventure"))
 
 func _start_adventure():
+	EventTracker.log_event("ADVENTURE_START", {"area": "Pallet Town"})
 	# Load starting area
 	var spawn = area_manager.load_area("Pallet Town")
 	player.global_position = Vector2(spawn["x"] * 16 + 8, spawn["y"] * 16 + 8)
@@ -186,6 +189,7 @@ func _on_wild_encounter(encounter_data):
 	var level = randi_range(encounter_data.get("min_level", 2), encounter_data.get("max_level", 5))
 	var wild = PokemonScript.new(species_id, level)
 	print("[MAIN] Wild encounter: %s Lv.%d, party size: %d" % [wild.pokemon_name, level, GameManager.party.size()])
+	EventTracker.log_event("WILD_ENCOUNTER", {"species_id": species_id, "level": level, "area": area_manager.get_current_area_name()})
 	GameManager.add_to_pokedex(wild.id)
 	GameManager.change_state(GameManager.GameState.BATTLE)
 	var inv = player.get_node("Inventory")
@@ -199,6 +203,7 @@ func _on_exit_entered(exit_data):
 	print("[MAIN] Exit triggered → %s at (%d, %d)" % [target_area, target_x, target_y])
 	if target_area.is_empty():
 		return
+	var from_area = area_manager.get_current_area_name()
 	var spawn = area_manager.load_area(target_area, target_x, target_y)
 	if spawn.is_empty():
 		print("[MAIN] ERROR: Failed to load area %s" % target_area)
@@ -206,6 +211,7 @@ func _on_exit_entered(exit_data):
 	# Place player 2 tiles away from exit to avoid re-triggering
 	var sx = spawn["x"]
 	var sy = spawn["y"]
+	EventTracker.log_event("AREA_TRANSITION", {"from": from_area, "to": target_area, "spawn": str(Vector2(sx, sy))})
 	# Move inward based on which edge the exit is on
 	var area_w = 30
 	var area_h = 20
@@ -250,6 +256,7 @@ func _begin_gym_fight(gym_data):
 		battle_scene.start(GameManager.party, team[0], player.get_node("Inventory"))
 
 func _on_battle_ended(result_str, wild):
+	EventTracker.log_event("BATTLE_RESULT", {"result": result_str, "party_hp": str(GameManager.party.map(func(p): return "%s:%d/%d" % [p.pokemon_name, p.hp, p.max_hp]))})
 	match result_str:
 		"caught":
 			GameManager.party.append(wild)
@@ -313,6 +320,7 @@ func player_pokemon_hurt() -> bool:
 	return false
 
 func _heal_party():
+	EventTracker.log_event("PARTY_HEALED", {})
 	for pkmn in GameManager.party:
 		pkmn.hp = pkmn.max_hp
 		pkmn.status = ""

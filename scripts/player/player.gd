@@ -65,12 +65,14 @@ func _physics_process(delta: float) -> void:
 		if is_moving and area_manager:
 			var encounter = area_manager.check_encounter(tile_x, tile_y)
 			if not encounter.is_empty():
+				EventTracker.log_event("ENCOUNTER_TRIGGER", {"tile": str(Vector2i(tile_x, tile_y)), "pos": str(global_position)})
 				encountered_pokemon.emit(encounter)
 
 			if exit_cooldown <= 0:
 				var exit = area_manager.check_exit(global_position.x, global_position.y)
 				if not exit.is_empty():
 					exit_cooldown = 1.0
+					EventTracker.log_event("EXIT_TRIGGER", {"exit": str(exit)})
 					entered_exit.emit(exit)
 
 			var item = area_manager.check_item(global_position.x, global_position.y)
