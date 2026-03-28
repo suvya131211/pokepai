@@ -24,6 +24,10 @@ enum Tile {
 	SAND = 8, CAVE_FLOOR = 9, CAVE_WALL = 10,
 	LEDGE = 11, SIGN = 12, POKECENTER = 13, SHOP = 14,
 	GYM_FLOOR = 15, FLOWER = 16, FENCE = 17,
+	# Biome tiles
+	SNOW = 18, ICE = 19, LAVA = 20, VOLCANO_ROCK = 21,
+	SWAMP = 22, DEEP_WATER = 23, BRIDGE = 24, RUINS = 25,
+	BERRY_BUSH = 26, LAKE_SHORE = 27,
 }
 
 const TILE_COLORS = {
@@ -45,6 +49,16 @@ const TILE_COLORS = {
 	Tile.GYM_FLOOR: Color("#ffab40"),
 	Tile.FLOWER: Color("#ec407a"),
 	Tile.FENCE: Color("#a1887f"),
+	Tile.SNOW: Color("#e8eaf6"),
+	Tile.ICE: Color("#b3e5fc"),
+	Tile.LAVA: Color("#ff5722"),
+	Tile.VOLCANO_ROCK: Color("#4e342e"),
+	Tile.SWAMP: Color("#558b2f"),
+	Tile.DEEP_WATER: Color("#0d47a1"),
+	Tile.BRIDGE: Color("#8d6e63"),
+	Tile.RUINS: Color("#78909c"),
+	Tile.BERRY_BUSH: Color("#e91e63"),
+	Tile.LAKE_SHORE: Color("#ffe0b2"),
 }
 
 const WALKABLE_TILES = {
@@ -54,9 +68,12 @@ const WALKABLE_TILES = {
 	Tile.CAVE_FLOOR: true, Tile.CAVE_WALL: false, Tile.LEDGE: false,
 	Tile.SIGN: false, Tile.POKECENTER: true, Tile.SHOP: true,
 	Tile.GYM_FLOOR: true, Tile.FLOWER: true, Tile.FENCE: false,
+	Tile.SNOW: true, Tile.ICE: true, Tile.LAVA: false, Tile.VOLCANO_ROCK: true,
+	Tile.SWAMP: true, Tile.DEEP_WATER: false, Tile.BRIDGE: true, Tile.RUINS: true,
+	Tile.BERRY_BUSH: true, Tile.LAKE_SHORE: true,
 }
 
-const ENCOUNTER_TILES = [Tile.TALL_GRASS, Tile.CAVE_FLOOR]
+const ENCOUNTER_TILES = [Tile.TALL_GRASS, Tile.CAVE_FLOOR, Tile.SNOW, Tile.SWAMP, Tile.RUINS, Tile.VOLCANO_ROCK]
 
 func setup(data: Dictionary) -> void:
 	area_name = data.get("name", "Unknown")
@@ -250,6 +267,55 @@ func _draw_tile_detail(x: int, y: int, tile: int) -> void:
 		Tile.CAVE_FLOOR:
 			if (x * 11 + y * 7) % 5 == 0:
 				draw_circle(Vector2(tx + 8, ty + 8), 1, Color(0.3, 0.3, 0.3, 0.3))
+
+		Tile.SNOW:
+			# Snowflake sparkles
+			if (x * 13 + y * 7) % 5 == 0:
+				draw_circle(Vector2(tx + 8, ty + 6), 1.5, Color(1, 1, 1, 0.6))
+			if (x * 11 + y * 3) % 7 == 0:
+				draw_circle(Vector2(tx + 4, ty + 12), 1, Color(1, 1, 1, 0.4))
+
+		Tile.ICE:
+			# Ice shine lines
+			draw_line(Vector2(tx + 2, ty + 4), Vector2(tx + 10, ty + 12), Color(1, 1, 1, 0.3), 0.5)
+			draw_line(Vector2(tx + 8, ty + 2), Vector2(tx + 14, ty + 8), Color(1, 1, 1, 0.2), 0.5)
+
+		Tile.LAVA:
+			# Lava bubble animation
+			var lt = Time.get_ticks_msec() * 0.002
+			var bubble = sin(lt + x * 2 + y * 3) * 0.3
+			draw_circle(Vector2(tx + 6 + bubble * 4, ty + 8), 2, Color(1, 0.8, 0, 0.5))
+
+		Tile.VOLCANO_ROCK:
+			# Cracks with glow
+			draw_line(Vector2(tx + 3, ty + 5), Vector2(tx + 12, ty + 10), Color(1, 0.3, 0, 0.3), 1.0)
+
+		Tile.SWAMP:
+			# Murky water spots
+			draw_circle(Vector2(tx + 5, ty + 8), 3, Color(0.2, 0.35, 0.15, 0.3))
+			draw_circle(Vector2(tx + 11, ty + 5), 2, Color(0.25, 0.4, 0.1, 0.2))
+
+		Tile.BRIDGE:
+			# Plank lines
+			for i in 3:
+				draw_line(Vector2(tx, ty + 4 + i * 4), Vector2(tx + TILE_SIZE, ty + 4 + i * 4), Color(0.4, 0.25, 0.15, 0.4), 1.0)
+
+		Tile.RUINS:
+			# Cracked stone
+			draw_rect(Rect2(tx + 2, ty + 2, 5, 5), Color(0.5, 0.55, 0.6, 0.3))
+			draw_rect(Rect2(tx + 9, ty + 8, 4, 6), Color(0.5, 0.55, 0.6, 0.2))
+
+		Tile.BERRY_BUSH:
+			# Bush with berries
+			draw_circle(Vector2(tx + 8, ty + 8), 5, Color(0.2, 0.5, 0.2, 0.6))
+			draw_circle(Vector2(tx + 5, ty + 6), 2, Color(0.9, 0.2, 0.3))
+			draw_circle(Vector2(tx + 11, ty + 7), 2, Color(0.9, 0.2, 0.3))
+
+		Tile.LAKE_SHORE:
+			# Sandy shore with water line
+			var wt = Time.get_ticks_msec() * 0.001
+			var wave = sin(wt + x * 0.5) * 2
+			draw_line(Vector2(tx, ty + 12 + wave), Vector2(tx + TILE_SIZE, ty + 12 + wave), Color(0.3, 0.6, 0.9, 0.3), 1.5)
 
 func _process(_delta):
 	# Water animation

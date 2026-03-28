@@ -98,12 +98,17 @@ func _draw_mini_map(vp: Vector2):
 	# Area name
 	draw_string(ThemeDB.fallback_font, Vector2(mx, my + map_h + 12), area.area_name, HORIZONTAL_ALIGNMENT_LEFT, map_w, 10, Color("#4fc3f7"))
 
+	# Biome label
+	var biome_label = _get_biome_label(area)
+	if biome_label != "":
+		draw_string(ThemeDB.fallback_font, Vector2(mx, my + map_h + 24), biome_label, HORIZONTAL_ALIGNMENT_LEFT, map_w, 9, Color("#aed581"))
+
 	# Legend hint
-	draw_string(ThemeDB.fallback_font, Vector2(mx, my + map_h + 24), "[M] expand", HORIZONTAL_ALIGNMENT_LEFT, map_w, 9, Color("#666"))
+	draw_string(ThemeDB.fallback_font, Vector2(mx, my + map_h + 36), "[M] expand", HORIZONTAL_ALIGNMENT_LEFT, map_w, 9, Color("#666"))
 
 	# Badge count display
 	var badge_count = GameManager.badges_earned
-	draw_string(ThemeDB.fallback_font, Vector2(mx, my + map_h + 38), "Badges: %d/8" % badge_count, HORIZONTAL_ALIGNMENT_LEFT, map_w, 10, Color("#ffd700"))
+	draw_string(ThemeDB.fallback_font, Vector2(mx, my + map_h + 50), "Badges: %d/8" % badge_count, HORIZONTAL_ALIGNMENT_LEFT, map_w, 10, Color("#ffd700"))
 
 func _draw_full_map(vp: Vector2):
 	# Large centered map overlay
@@ -177,6 +182,9 @@ func _draw_full_map(vp: Vector2):
 
 	# Title
 	draw_string(ThemeDB.fallback_font, Vector2(mx + 10, my - 8), area.area_name, HORIZONTAL_ALIGNMENT_LEFT, map_w, 16, Color("#4fc3f7"))
+	var biome_lbl = _get_biome_label(area)
+	if biome_lbl != "":
+		draw_string(ThemeDB.fallback_font, Vector2(mx + map_w - 150, my - 8), biome_lbl, HORIZONTAL_ALIGNMENT_LEFT, 140, 11, Color("#aed581"))
 
 	# Legend
 	var ly = my + map_h + 14
@@ -202,3 +210,17 @@ func _get_area_manager():
 	if nodes.size() > 0:
 		return nodes[0]
 	return null
+
+func _get_biome_label(area) -> String:
+	match area.area_name:
+		"Route 1": return "Biome: Forest"
+		"Mt. Moon": return "Biome: Cave + Lava"
+		"Route 3": return "Biome: Frozen Snow"
+		"Cerulean City": return "Biome: Lake"
+		"Celadon City": return "Biome: Swamp Edge"
+		"Saffron City": return "Biome: Ancient Ruins"
+		"Pokemon League": return "Biome: Volcano"
+		"Pallet Town": return "Biome: Grassland"
+		"Pewter City": return "Biome: Rocky"
+		"Vermilion City": return "Biome: Coastal"
+	return ""
