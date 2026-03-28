@@ -243,10 +243,28 @@ func _on_exit_entered(exit_data):
 	if area_manager.current_area:
 		area_w = area_manager.current_area.width
 		area_h = area_manager.current_area.height
-	if sy <= 1: sy = 5
-	elif sy >= area_h - 2: sy = area_h - 6
-	if sx <= 1: sx = 5
-	elif sx >= area_w - 2: sx = area_w - 6
+	# Push 2 tiles inward from edge, then find walkable position
+	if sy <= 1: sy = 2
+	elif sy >= area_h - 2: sy = area_h - 3
+	if sx <= 1: sx = 2
+	elif sx >= area_w - 2: sx = area_w - 3
+	# Search for walkable tile near spawn (spiral outward)
+	var found_walkable = false
+	for radius in range(0, 6):
+		for dy in range(-radius, radius + 1):
+			for dx in range(-radius, radius + 1):
+				var check_x = sx + dx
+				var check_y = sy + dy
+				if check_x >= 0 and check_x < area_w and check_y >= 0 and check_y < area_h:
+					if area_manager.current_area.is_walkable(check_x, check_y):
+						sx = check_x
+						sy = check_y
+						found_walkable = true
+						break
+			if found_walkable:
+				break
+		if found_walkable:
+			break
 	player.global_position = Vector2(sx * 16 + 8, sy * 16 + 8)
 	player.exit_cooldown = 3.0
 	npc_interaction_cooldown = 3.0  # prevent NPC auto-trigger on area load
