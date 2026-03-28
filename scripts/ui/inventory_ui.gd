@@ -22,6 +22,31 @@ func _unhandled_input(event: InputEvent) -> void:
 		visible = false
 		GameManager.change_state(GameManager.GameState.WORLD)
 		get_viewport().set_input_as_handled()
+	# Use Repel (R key)
+	if visible and event is InputEventKey and event.pressed and event.keycode == KEY_R:
+		if _current_inventory and _current_inventory.key_items.get("repel", 0) > 0:
+			_current_inventory.key_items["repel"] -= 1
+			_current_inventory.repel_steps = 200
+			_heal_message = "Used Repel! No wild encounters for 200 steps."
+			_heal_timer = 2.0
+			get_viewport().set_input_as_handled()
+		elif _current_inventory:
+			_heal_message = "You have no Repels!"
+			_heal_timer = 2.0
+			get_viewport().set_input_as_handled()
+	# Use Escape Rope (E key in inventory)
+	if visible and event is InputEventKey and event.pressed and event.keycode == KEY_E:
+		if _current_inventory and _current_inventory.key_items.get("escape_rope", 0) > 0:
+			_current_inventory.key_items["escape_rope"] -= 1
+			_heal_message = "Used Escape Rope! Teleported to last Pokemon Center."
+			_heal_timer = 2.0
+			get_viewport().set_input_as_handled()
+			# Signal escape rope use (main.gd or game manager can handle teleport)
+			GameManager.emit_signal("escape_rope_used") if GameManager.has_signal("escape_rope_used") else null
+		elif _current_inventory:
+			_heal_message = "You have no Escape Ropes!"
+			_heal_timer = 2.0
+			get_viewport().set_input_as_handled()
 	# Use berry on party Pokemon (press 1-6 to heal that party member)
 	if visible and event is InputEventKey and event.pressed:
 		if event.keycode >= KEY_1 and event.keycode <= KEY_6:
@@ -70,7 +95,8 @@ func _draw() -> void:
 	for ball_type in ball_items:
 		draw_circle(Vector2(40, y + 8), 10, ball_colors[ball_type])
 		draw_circle(Vector2(40, y + 13), 10, Color.WHITE)
-		draw_string(ThemeDB.fallback_font, Vector2(60, y + 14), "%s: ?" % ball_type.capitalize(), HORIZONTAL_ALIGNMENT_LEFT, w, 14, Color("#ccc"))
+		var ball_count = _current_inventory.balls.get(ball_type, 0) if _current_inventory else "?"
+		draw_string(ThemeDB.fallback_font, Vector2(60, y + 14), "%s: %s" % [ball_type.capitalize(), str(ball_count)], HORIZONTAL_ALIGNMENT_LEFT, w, 14, Color("#ccc"))
 		y += 32
 
 	y += 16
@@ -79,7 +105,8 @@ func _draw() -> void:
 	var berry_colors := {"razz": Color("#e91e63"), "nanab": Color("#ffeb3b"), "pinap": Color("#8bc34a")}
 	for berry_type in ["razz", "nanab", "pinap"]:
 		draw_circle(Vector2(40, y + 8), 8, berry_colors[berry_type])
-		draw_string(ThemeDB.fallback_font, Vector2(60, y + 14), "%s Berry: ?" % berry_type.capitalize(), HORIZONTAL_ALIGNMENT_LEFT, w, 14, Color("#ccc"))
+		var berry_count = _current_inventory.berries.get(berry_type, 0) if _current_inventory else "?"
+		draw_string(ThemeDB.fallback_font, Vector2(60, y + 14), "%s Berry: %s" % [berry_type.capitalize(), str(berry_count)], HORIZONTAL_ALIGNMENT_LEFT, w, 14, Color("#ccc"))
 		y += 32
 
 	# Party list for healing
@@ -92,8 +119,25 @@ func _draw() -> void:
 		draw_string(ThemeDB.fallback_font, Vector2(36, py), hp_text, HORIZONTAL_ALIGNMENT_LEFT, w - 48, 12, col)
 		py += 18
 
+	# Key Items section
+	if _current_inventory and "key_items" in _current_inventory:
+		var ki = _current_inventory.key_items
+		if not ki.is_empty():
+			draw_string(ThemeDB.fallback_font, Vector2(24, py + 10), "Key Items", HORIZONTAL_ALIGNMENT_LEFT, w, 16, Color("#e0e0e0"))
+			py += 30
+			var repel_count = ki.get("repel", 0)
+			var rope_count = ki.get("escape_rope", 0)
+			var repel_steps_left = _current_inventory.repel_steps if "repel_steps" in _current_inventory else 0
+			var repel_label = "Repel x%d" % repel_count
+			if repel_steps_left > 0:
+				repel_label += " (active: %d steps)" % repel_steps_left
+			draw_string(ThemeDB.fallback_font, Vector2(36, py), repel_label + "  [R to use]", HORIZONTAL_ALIGNMENT_LEFT, w - 48, 12, Color("#a5d6a7"))
+			py += 18
+			draw_string(ThemeDB.fallback_font, Vector2(36, py), "Escape Rope x%d  [E to use]" % rope_count, HORIZONTAL_ALIGNMENT_LEFT, w - 48, 12, Color("#ffcc80"))
+			py += 18
+
 	# Heal message
 	if _heal_timer > 0:
 		draw_string(ThemeDB.fallback_font, Vector2(w / 2 - 100, h - 40), _heal_message, HORIZONTAL_ALIGNMENT_CENTER, 200, 13, Color("#4caf50"))
 
-	draw_string(ThemeDB.fallback_font, Vector2(24, h - 16), "Press I or ESC to close", HORIZONTAL_ALIGNMENT_LEFT, w, 12, Color("#888"))
+	draw_string(ThemeDB.fallback_font, Vector2(24, h - 16), "Press I or ESC to close | R=Repel | E=Escape Rope", HORIZONTAL_ALIGNMENT_LEFT, w, 12, Color("#888"))

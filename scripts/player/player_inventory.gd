@@ -3,6 +3,8 @@ class_name PlayerInventory
 
 var balls: Dictionary = {"pokeball": 15, "greatball": 5, "ultraball": 2}
 var berries: Dictionary = {"razz": 5, "nanab": 3, "pinap": 2}
+var key_items: Dictionary = {"repel": 0, "escape_rope": 0}
+var repel_steps: int = 0  # remaining repel steps
 
 func _ready() -> void:
 	GameManager.item_collected.connect(_on_item_collected)
