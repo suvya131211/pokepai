@@ -104,7 +104,9 @@ func check_encounter(tile_x: int, tile_y: int) -> Dictionary:
 		# Only check once per new tile stepped on (not per frame)
 		if current_tile != _last_encounter_tile:
 			_last_encounter_tile = current_tile
-			if randf() < 0.05:  # 5% chance per new tall grass tile (~1 encounter per 20 tiles)
+			# Lower rate for caves (every tile is encounter), higher for grass patches
+			var rate = 0.03 if current_area.area_type == "cave" else 0.06
+			if randf() < rate:  # 3% cave, 6% grass
 				return current_area.spawn_encounter()
 	return {}
 

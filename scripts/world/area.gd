@@ -77,9 +77,23 @@ func setup(data: Dictionary) -> void:
 	has_shop = data.get("shop", false)
 	gym_leader = data.get("gym_leader", {})
 	requires_hm = data.get("requires_hm", "")
-	print("[AREA] setup: %s, tiles: %d (expected %d), walkable at (14,14): %s" % [
-		area_name, tiles.size(), width * height,
-		str(is_walkable(14, 14))])
+	# Force exit tiles and their neighbors to be walkable
+	for ex in exits:
+		var ex_x = ex.get("x", -1)
+		var ex_y = ex.get("y", -1)
+		if ex_x >= 0 and ex_y >= 0 and ex_x < width and ex_y < height:
+			tiles[ex_y * width + ex_x] = Tile.PATH
+			# Also make adjacent tile walkable (so player can reach the edge)
+			if ex_x == 0 and ex_x + 1 < width:
+				tiles[ex_y * width + (ex_x + 1)] = Tile.PATH
+			elif ex_x == width - 1 and ex_x - 1 >= 0:
+				tiles[ex_y * width + (ex_x - 1)] = Tile.PATH
+			if ex_y == 0 and ex_y + 1 < height:
+				tiles[(ex_y + 1) * width + ex_x] = Tile.PATH
+			elif ex_y == height - 1 and ex_y - 1 >= 0:
+				tiles[(ex_y - 1) * width + ex_x] = Tile.PATH
+	print("[AREA] setup: %s, tiles: %d (expected %d)" % [
+		area_name, tiles.size(), width * height])
 	queue_redraw()
 
 func get_tile(x: int, y: int) -> int:
