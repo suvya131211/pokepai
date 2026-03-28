@@ -110,6 +110,10 @@ func start(party: Array, wild, inv = null):
         player_sprite = PokemonDB.get_sprite_texture(player_pokemon.id)
     phase = Phase.INTRO
     message = "A wild %s appeared!" % wild.pokemon_name
+    # Ability: Intimidate (lower wild ATK on entry)
+    if player_pokemon and player_pokemon.ability == "Intimidate":
+        wild_pokemon.atk = int(wild_pokemon.atk * 0.8)
+        message += " %s intimidated %s!" % [player_pokemon.pokemon_name, wild_pokemon.pokemon_name]
     intro_timer = 2.0
     message_timer = 0.0
     result = ""
@@ -121,6 +125,9 @@ func start(party: Array, wild, inv = null):
     poison_timer = 0.0
     move_anim_timer = 0.0
     move_particles = []
+    # Reset stat stages at battle start
+    if player_pokemon: player_pokemon.reset_stages()
+    if wild_pokemon: wild_pokemon.reset_stages()
     visible = true
     print("[BATTLE] Started wild battle: %s (Lv.%d) vs %s (Lv.%d)" % [
         wild.pokemon_name, wild.level,
@@ -148,6 +155,10 @@ func start_trainer_battle(t_name: String, team: Array):
         wild_sprite = PokemonDB.get_sprite_texture(wild_pokemon.id)
     phase = Phase.INTRO
     message = "%s sent out %s!" % [trainer_name, wild_pokemon.pokemon_name if wild_pokemon else "???"]
+    # Ability: Intimidate (lower opponent ATK on entry)
+    if player_pokemon and player_pokemon.ability == "Intimidate" and wild_pokemon:
+        wild_pokemon.atk = int(wild_pokemon.atk * 0.8)
+        message += " %s intimidated %s!" % [player_pokemon.pokemon_name, wild_pokemon.pokemon_name]
     intro_timer = 2.0
     message_timer = 0.0
     result = ""
@@ -467,6 +478,17 @@ func _player_attack_move(move_index: int):
         _wild_attack()
         return
 
+    # Status blocks/modifies player attack
+    if player_pokemon.status == "frozen":
+        if randf() < 0.2:
+            player_pokemon.status = ""
+            message = "%s thawed out!" % player_pokemon.pokemon_name
+            message_timer = 1.2
+        else:
+            message = "%s is frozen solid!" % player_pokemon.pokemon_name
+            message_timer = 1.2
+            return
+
     var dmg_data: Dictionary
     if move_index >= 0 and move_index < player_pokemon.known_moves.size():
         var move = player_pokemon.use_move(move_index)
@@ -476,6 +498,23 @@ func _player_attack_move(move_index: int):
             phase = Phase.FIGHT
             return
         dmg_data = player_pokemon.calc_damage_with_move(wild_pokemon, move)
+        # Ability: Overgrow/Blaze/Torrent (+50% same-type when HP < 33%)
+        if player_pokemon.ability in ["Overgrow", "Blaze", "Torrent"]:
+            var ability_type = {"Overgrow": "grass", "Blaze": "fire", "Torrent": "water"}.get(player_pokemon.ability, "")
+            if move.get("type", "") == ability_type and player_pokemon.hp < player_pokemon.max_hp / 3:
+                dmg_data["damage"] = int(dmg_data["damage"] * 1.5)
+        # Ability: Levitate (wild immune to Ground moves)
+        if wild_pokemon.ability == "Levitate" and move.get("type", "") == "ground":
+            dmg_data["damage"] = 0
+            dmg_data["text"] = "Levitate — no effect!"
+        # Ability: Lightning Rod (wild immune to Electric moves)
+        if wild_pokemon.ability == "Lightning Rod" and move.get("type", "") == "electric":
+            dmg_data["damage"] = 0
+            dmg_data["text"] = "Lightning Rod — immune!"
+        # Ability: Sturdy (wild survives OHKO with 1 HP)
+        if wild_pokemon.ability == "Sturdy" and wild_pokemon.hp > 1 and dmg_data["damage"] >= wild_pokemon.hp and dmg_data["damage"] < wild_pokemon.max_hp:
+            dmg_data["damage"] = wild_pokemon.hp - 1
+            dmg_data["text"] = (dmg_data["text"] + " Sturdy kept it standing!").strip_edges()
         wild_pokemon.hp = maxi(0, wild_pokemon.hp - dmg_data["damage"])
         EventTracker.log_event("DAMAGE_DEALT", {"target": "wild", "damage": dmg_data["damage"], "remaining_hp": wild_pokemon.hp, "move": dmg_data.get("move_name", ""), "effectiveness": dmg_data.get("text", "")})
         wild_shake = 1.0
@@ -517,6 +556,14 @@ func _wild_attack():
         message = "%s is fast asleep..." % wild_pokemon.pokemon_name
         message_timer = 1.2
         return
+    if wild_pokemon.status == "frozen":
+        if randf() < 0.2:
+            wild_pokemon.status = ""
+            message = "%s thawed out!" % wild_pokemon.pokemon_name
+        else:
+            message = "%s is frozen solid!" % wild_pokemon.pokemon_name
+            message_timer = 1.2
+            return
     if wild_pokemon.status == "paralyzed" and randf() < 0.25:
         message = "%s is paralyzed! It can't move!" % wild_pokemon.pokemon_name
         message_timer = 1.2
@@ -533,6 +580,9 @@ func _wild_attack():
         dmg_data = wild_pokemon.calc_damage_with_move(player_pokemon, move)
     else:
         dmg_data = wild_pokemon.calc_damage(player_pokemon)
+    # Burn reduces physical damage by 50%
+    if wild_pokemon.status == "burned" and dmg_data.get("category", "") == "physical":
+        dmg_data["damage"] = int(dmg_data["damage"] * 0.5)
     player_pokemon.hp = maxi(0, player_pokemon.hp - dmg_data["damage"])
     EventTracker.log_event("DAMAGE_DEALT", {"target": "player", "damage": dmg_data["damage"], "remaining_hp": player_pokemon.hp, "move": dmg_data.get("move_name", "")})
     player_shake = 1.0
@@ -551,10 +601,18 @@ func _wild_attack():
         message = "%s attacks! %d dmg.%s" % [wild_pokemon.pokemon_name, dmg_data["damage"], eff_text]
     else:
         message = "%s used %s!%s" % [wild_pokemon.pokemon_name, mname if mname != "" else "an attack", eff_text]
+    # Ability: Static (30% paralyze attacker on contact)
+    if player_pokemon.ability == "Static" and dmg_data["damage"] > 0 and randf() < 0.3 and wild_pokemon.status == "":
+        wild_pokemon.status = "paralyzed"
+        message += " Static paralyzed the attacker!"
+    # Ability: Poison Point (30% poison attacker on contact)
+    if player_pokemon.ability == "Poison Point" and dmg_data["damage"] > 0 and randf() < 0.3 and wild_pokemon.status == "":
+        wild_pokemon.status = "poisoned"
+        message += " Poison Point poisoned the attacker!"
     message_timer = 1.5
 
 func _apply_end_of_turn_effects():
-    # Poison chip damage at end of turn
+    # Poison chip damage at end of turn (1/8 max HP)
     if wild_pokemon and wild_pokemon.status == "poisoned" and wild_pokemon.is_alive():
         var chip = maxi(1, wild_pokemon.max_hp / 8)
         wild_pokemon.hp = maxi(0, wild_pokemon.hp - chip)
@@ -563,6 +621,29 @@ func _apply_end_of_turn_effects():
         var chip = maxi(1, player_pokemon.max_hp / 8)
         player_pokemon.hp = maxi(0, player_pokemon.hp - chip)
         player_flash = 0.5
+    # Burn chip damage at end of turn (1/16 max HP)
+    if wild_pokemon and wild_pokemon.status == "burned" and wild_pokemon.is_alive():
+        var chip = maxi(1, wild_pokemon.max_hp / 16)
+        wild_pokemon.hp = maxi(0, wild_pokemon.hp - chip)
+        wild_flash = 0.5
+    if player_pokemon and player_pokemon.status == "burned" and player_pokemon.is_alive():
+        var chip = maxi(1, player_pokemon.max_hp / 16)
+        player_pokemon.hp = maxi(0, player_pokemon.hp - chip)
+        player_flash = 0.5
+    # Ability: Shed Skin (33% chance to cure status each turn)
+    if player_pokemon and player_pokemon.ability == "Shed Skin" and player_pokemon.status != "" and randf() < 0.33:
+        player_pokemon.status = ""
+    if wild_pokemon and wild_pokemon.ability == "Shed Skin" and wild_pokemon.status != "" and randf() < 0.33:
+        wild_pokemon.status = ""
+    # Ability: Bad Dreams (sleeping opponent loses 1/8 HP per turn)
+    if player_pokemon and wild_pokemon and wild_pokemon.ability == "Bad Dreams" and player_pokemon.status == "sleep" and player_pokemon.is_alive():
+        var bd_dmg = maxi(1, player_pokemon.max_hp / 8)
+        player_pokemon.hp = maxi(0, player_pokemon.hp - bd_dmg)
+        player_flash = 0.5
+    if player_pokemon and wild_pokemon and player_pokemon.ability == "Bad Dreams" and wild_pokemon.status == "sleep" and wild_pokemon.is_alive():
+        var bd_dmg = maxi(1, wild_pokemon.max_hp / 8)
+        wild_pokemon.hp = maxi(0, wild_pokemon.hp - bd_dmg)
+        wild_flash = 0.5
 
 func _on_wild_fainted():
     var xp_gain = wild_pokemon.level * 10

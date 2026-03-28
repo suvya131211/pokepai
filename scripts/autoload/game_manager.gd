@@ -18,6 +18,9 @@ var game_time: float = 8.0       # 0-24 hours
 # Towns visited (for fast travel)
 var towns_visited: Array[String] = ["Starter Town"]
 
+# Fly menu state
+var show_fly_menu: bool = false
+
 # Badge progress
 var badges_earned: int = 0
 

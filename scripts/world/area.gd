@@ -102,7 +102,14 @@ func get_tile(x: int, y: int) -> int:
 	return tiles[y * width + x]
 
 func is_walkable(x: int, y: int) -> bool:
-	return WALKABLE_TILES.get(get_tile(x, y), false)
+	var tile = get_tile(x, y)
+	if tile == Tile.WATER:
+		for pkmn in GameManager.party:
+			for move in pkmn.known_moves:
+				if move.get("name", "") == "Surf":
+					return true
+		return false
+	return WALKABLE_TILES.get(tile, false)
 
 func is_encounter_tile(x: int, y: int) -> bool:
 	return get_tile(x, y) in ENCOUNTER_TILES

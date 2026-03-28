@@ -215,6 +215,13 @@ func _process(_delta):
 func _on_wild_encounter(encounter_data):
 	if GameManager.state != GameManager.GameState.WORLD:
 		return  # Don't trigger encounters during other states
+	# Check repel
+	var inv = player.get_node("Inventory")
+	if inv.repel_steps > 0:
+		inv.repel_steps -= 1
+		if inv.repel_steps == 0:
+			story_dialog.show_dialog("", ["Repel wore off!"])
+		return
 	var species_id = encounter_data.get("species_id", 1)
 	var level = randi_range(encounter_data.get("min_level", 2), encounter_data.get("max_level", 5))
 	var wild = PokemonScript.new(species_id, level)
@@ -222,7 +229,6 @@ func _on_wild_encounter(encounter_data):
 	EventTracker.log_event("WILD_ENCOUNTER", {"species_id": species_id, "level": level, "area": area_manager.get_current_area_name()})
 	GameManager.add_to_pokedex(wild.id)
 	GameManager.change_state(GameManager.GameState.BATTLE)
-	var inv = player.get_node("Inventory")
 	battle_scene.set_inventory(inv)
 	battle_scene.start(GameManager.party, wild, inv)
 
@@ -504,9 +510,11 @@ func _on_shop():
 	var inv = player.get_node("Inventory")
 	inv.balls["pokeball"] += 5
 	inv.balls["greatball"] += 2
+	inv.key_items["repel"] = inv.key_items.get("repel", 0) + 3
+	inv.key_items["escape_rope"] = inv.key_items.get("escape_rope", 0) + 1
 	story_dialog.show_dialog("Shopkeeper", [
-		"Here are some Pokeballs for your journey!",
-		"Got 5 Pokeballs and 2 Great Balls!",
+		"Here are some items for your journey!",
+		"Got 5 Pokeballs, 2 Great Balls, 3 Repels, and 1 Escape Rope!",
 	])
 
 func player_pokemon_hurt() -> bool:
@@ -523,12 +531,53 @@ func _heal_party():
 		for move in pkmn.known_moves:
 			move["current_pp"] = move["pp"]
 
+func _check_fly() -> bool:
+	for pkmn in GameManager.party:
+		for move in pkmn.known_moves:
+			if move.get("name", "") == "Fly":
+				return true
+	return false
+
+func _open_fly_menu():
+	GameManager.show_fly_menu = true
+
+func _fly_to(town_name: String):
+	GameManager.show_fly_menu = false
+	var spawn = area_manager.load_area(town_name)
+	if spawn.is_empty():
+		return
+	var sx = spawn["x"]
+	var sy = spawn["y"]
+	if area_manager.current_area:
+		for try_x in [14, 15, sx]:
+			if area_manager.current_area.is_walkable(try_x, sy):
+				sx = try_x
+				break
+	player.global_position = Vector2(sx * 16 + 8, sy * 16 + 8)
+	player.exit_cooldown = 3.0
+	story_dialog.show_dialog("", ["Flew to %s!" % town_name])
+	SaveManager.save_game()
+	EventTracker.log_event("FLY", {"to": town_name})
+
 func _unhandled_input(event):
 	if event is InputEventKey and event.pressed:
 		if event.keycode == KEY_F5:
 			_save_game()
 		elif event.keycode == KEY_F9:
 			_load_game()
+		elif event.keycode == KEY_T and GameManager.state == GameManager.GameState.WORLD:
+			if _check_fly():
+				_open_fly_menu()
+			else:
+				story_dialog.show_dialog("", ["No Pokemon knows Fly!"])
+		elif GameManager.show_fly_menu and event.keycode >= KEY_1 and event.keycode <= KEY_9:
+			var idx = event.keycode - KEY_1
+			if idx < GameManager.towns_visited.size():
+				_fly_to(GameManager.towns_visited[idx])
+			else:
+				GameManager.show_fly_menu = false
+		elif GameManager.show_fly_menu and event.keycode == KEY_ESCAPE:
+			GameManager.show_fly_menu = false
 
 func _save_game():
 	if SaveManager.save_game():

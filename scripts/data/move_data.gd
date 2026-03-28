@@ -13,9 +13,11 @@ var moves: Dictionary = {
     "Growl": {"type":"normal","power":0,"accuracy":100,"pp":40,"category":"status","effect":"lower_atk"},
 
     # Fire
-    "Ember": {"type":"fire","power":40,"accuracy":100,"pp":25,"category":"special","effect":"none"},
-    "Flamethrower": {"type":"fire","power":90,"accuracy":100,"pp":15,"category":"special","effect":"none"},
+    "Ember": {"type":"fire","power":40,"accuracy":100,"pp":25,"category":"special","effect":"burn"},
+    "Flamethrower": {"type":"fire","power":90,"accuracy":100,"pp":15,"category":"special","effect":"burn"},
     "Fire Spin": {"type":"fire","power":35,"accuracy":85,"pp":15,"category":"special","effect":"none"},
+    "Fire Blast": {"type":"fire","power":110,"accuracy":85,"pp":5,"category":"special","effect":"burn"},
+    "Scald": {"type":"water","power":80,"accuracy":100,"pp":15,"category":"special","effect":"burn"},
 
     # Water
     "Water Gun": {"type":"water","power":40,"accuracy":100,"pp":25,"category":"special","effect":"none"},
@@ -30,7 +32,7 @@ var moves: Dictionary = {
 
     # Electric
     "Thunder Shock": {"type":"electric","power":40,"accuracy":100,"pp":30,"category":"special","effect":"paralyze"},
-    "Thunderbolt": {"type":"electric","power":90,"accuracy":100,"pp":15,"category":"special","effect":"none"},
+    "Thunderbolt": {"type":"electric","power":90,"accuracy":100,"pp":15,"category":"special","effect":"paralyze"},
     "Thunder Wave": {"type":"electric","power":0,"accuracy":90,"pp":20,"category":"status","effect":"paralyze"},
 
     # Rock/Ground
@@ -46,9 +48,10 @@ var moves: Dictionary = {
     "Dark Pulse": {"type":"dark","power":80,"accuracy":100,"pp":15,"category":"special","effect":"none"},
 
     # Ice
-    "Ice Beam": {"type":"ice","power":90,"accuracy":100,"pp":10,"category":"special","effect":"none"},
+    "Ice Beam": {"type":"ice","power":90,"accuracy":100,"pp":10,"category":"special","effect":"freeze"},
     "Icy Wind": {"type":"ice","power":55,"accuracy":95,"pp":15,"category":"special","effect":"lower_atk"},
     "Ice Shard": {"type":"ice","power":40,"accuracy":100,"pp":30,"category":"physical","effect":"none"},
+    "Ice Punch": {"type":"ice","power":75,"accuracy":100,"pp":15,"category":"physical","effect":"freeze"},
 
     # Psychic/Fairy
     "Psychic": {"type":"psychic","power":90,"accuracy":100,"pp":10,"category":"special","effect":"none"},
@@ -75,6 +78,19 @@ var moves: Dictionary = {
     "Karate Chop": {"type":"fighting","power":50,"accuracy":100,"pp":25,"category":"physical","effect":"none"},
     "Brick Break": {"type":"fighting","power":75,"accuracy":100,"pp":15,"category":"physical","effect":"none"},
 
+    # Stat-raising moves
+    "Swords Dance": {"type":"normal","power":0,"accuracy":100,"pp":20,"category":"status","effect":"raise_atk_2"},
+    "Iron Defense": {"type":"steel","power":0,"accuracy":100,"pp":15,"category":"status","effect":"raise_def_2"},
+    "Harden": {"type":"normal","power":0,"accuracy":100,"pp":30,"category":"status","effect":"raise_def"},
+    "Meditate": {"type":"psychic","power":0,"accuracy":100,"pp":40,"category":"status","effect":"raise_atk"},
+
+    # TM moves
+    "Flare Blitz": {"type":"fire","power":120,"accuracy":100,"pp":15,"category":"physical","effect":"burn"},
+    "Hydro Pump": {"type":"water","power":110,"accuracy":80,"pp":5,"category":"special","effect":"none"},
+    "Solar Beam": {"type":"grass","power":120,"accuracy":100,"pp":10,"category":"special","effect":"none"},
+    "Thunder": {"type":"electric","power":110,"accuracy":70,"pp":10,"category":"special","effect":"paralyze"},
+    "Blizzard": {"type":"ice","power":110,"accuracy":70,"pp":5,"category":"special","effect":"freeze"},
+
     # HM moves (also usable in battle)
     "Cut": {"type":"normal","power":50,"accuracy":95,"pp":30,"category":"physical","effect":"none"},
     "Strength": {"type":"normal","power":80,"accuracy":100,"pp":15,"category":"physical","effect":"none"},
@@ -85,7 +101,7 @@ var moves: Dictionary = {
 var default_movesets: Dictionary = {
     1:  ["Vine Whip", "Tackle", "Leech Seed", "Razor Leaf"],       # Bulbasaur
     2:  ["Ember", "Scratch", "Growl", "Fire Spin"],                  # Charmander
-    3:  ["Water Gun", "Tackle", "Bubble", "Bite"],                   # Squirtle
+    3:  ["Water Gun", "Tackle", "Surf", "Bite"],                     # Squirtle — knows Surf!
     4:  ["Thunder Shock", "Quick Attack", "Thunder Wave", "Tackle"], # Pikachu
     5:  ["Rock Throw", "Tackle", "Rock Slide", "Dig"],              # Geodude
     6:  ["Lick", "Shadow Ball", "Confusion", "Bite"],               # Gastly
@@ -93,7 +109,7 @@ var default_movesets: Dictionary = {
     8:  ["Poison Sting", "Scratch", "Bite", "Tackle"],              # Nidoran
     9:  ["Confusion", "Psychic", "Flash", "Tackle"],                # Abra
     10: ["Scratch", "Dig", "Poison Sting", "Quick Attack"],         # Sandshrew
-    11: ["Gust", "Quick Attack", "Wing Attack", "Tackle"],          # Pidgey
+    11: ["Gust", "Quick Attack", "Wing Attack", "Fly"],             # Pidgey — knows Fly!
     12: ["Bite", "Dark Pulse", "Wing Attack", "Gust"],              # Murkrow
     13: ["Metal Claw", "Rock Throw", "Tackle", "Iron Tail"],        # Aron
     14: ["Dragon Rage", "Tackle", "Water Gun", "Dragon Claw"],      # Dratini

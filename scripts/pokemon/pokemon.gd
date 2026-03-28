@@ -13,7 +13,11 @@ var atk: int
 var def_stat: int
 var xp: int = 0
 var xp_to_next: int
-var status: String = ""  # "sleep" / "paralyzed" / "poisoned" / ""
+var status: String = ""  # "sleep" / "paralyzed" / "poisoned" / "burned" / "frozen" / ""
+
+# Stat stages (-6 to +6)
+var atk_stage: int = 0
+var def_stage: int = 0
 
 var known_moves: Array = []  # array of move dicts (with current_pp included)
 var move_pp: Array = []       # current PP for each move (mirrors known_moves current_pp)
@@ -47,6 +51,7 @@ const NATURES = {
 }
 
 var nature: String = "Hardy"
+var ability: String = ""
 
 func _init(species_id: int, lvl: int = 1) -> void:
 	species = PokemonDB.get_species(species_id)
@@ -74,6 +79,7 @@ func _init(species_id: int, lvl: int = 1) -> void:
 	var nature_names = NATURES.keys()
 	nature = nature_names[randi() % nature_names.size()]
 	_apply_nature()
+	ability = species.get("ability", "")
 	print("[POKEMON] Created %s Lv.%d with %d moves: %s" % [
 		pokemon_name, level, known_moves.size(),
 		str(known_moves.map(func(m): return m.get("name", "?")))])
@@ -136,21 +142,23 @@ func calc_damage_with_move(defender, move: Dictionary) -> Dictionary:
 		return {"damage": 0, "effectiveness": 0.0, "text": "No effect!", "move_name": move.get("name", "")}
 	# STAB bonus (1.5x if move type matches user type)
 	var stab = 1.5 if move["type"] == type else 1.0
-	var atk_stat = atk
-	var def_stat_val = defender.def_stat
+	var atk_stat = get_effective_atk()
+	var def_stat_val = defender.get_effective_def()
 	var power = move["power"]
 	var base = int(((2.0 * level + 10.0) / 250.0) * (float(atk_stat) / float(def_stat_val)) * power + 2.0)
 	var dmg = maxi(1, int(base * eff * stab * randf_range(0.85, 1.0)))
 	# False Swipe: always leave 1 HP
 	if move["effect"] == "false_swipe" and defender.hp - dmg < 1:
 		dmg = maxi(0, defender.hp - 1)
-	# Apply flinch / secondary effects on hit
-	if move["effect"] == "paralyze" and randf() < 0.3:
-		if defender.status == "":
-			defender.status = "paralyzed"
-	elif move["effect"] == "poison" and randf() < 0.3:
-		if defender.status == "":
-			defender.status = "poisoned"
+	# Secondary status effects on hit
+	var effect = move.get("effect", "none")
+	if dmg > 0 and effect in ["burn", "freeze", "paralyze", "poison"] and defender.status == "":
+		var chance = 0.1
+		if effect == "paralyze" and move.get("type", "") == "electric":
+			chance = 0.3
+		if randf() < chance:
+			var status_map = {"burn": "burned", "freeze": "frozen", "paralyze": "paralyzed", "poison": "poisoned"}
+			defender.status = status_map.get(effect, "")
 	var eff_text = ""
 	if eff > 1.0: eff_text = "Super effective!"
 	elif eff < 1.0 and eff > 0: eff_text = "Not very effective..."
@@ -181,12 +189,28 @@ func _apply_status_move(defender, move: Dictionary) -> Dictionary:
 				return {"damage": 0, "effectiveness": 1.0, "text": "It won't affect %s..." % defender.pokemon_name, "move_name": move.get("name", "")}
 			defender.status = "poisoned"
 			return {"damage": 0, "effectiveness": 1.0, "text": "%s was poisoned!" % defender.pokemon_name, "move_name": move.get("name", "")}
+		"burn":
+			if defender.status != "":
+				return {"damage": 0, "effectiveness": 1.0, "text": "It won't affect %s..." % defender.pokemon_name, "move_name": move.get("name", "")}
+			defender.status = "burned"
+			return {"damage": 0, "effectiveness": 1.0, "text": "%s was burned!" % defender.pokemon_name, "move_name": move.get("name", "")}
+		"freeze":
+			if defender.status != "":
+				return {"damage": 0, "effectiveness": 1.0, "text": "It won't affect %s..." % defender.pokemon_name, "move_name": move.get("name", "")}
+			defender.status = "frozen"
+			return {"damage": 0, "effectiveness": 1.0, "text": "%s was frozen solid!" % defender.pokemon_name, "move_name": move.get("name", "")}
 		"lower_atk":
-			defender.atk = int(defender.atk * 0.8)
-			return {"damage": 0, "effectiveness": 1.0, "text": "%s's attack fell!" % defender.pokemon_name, "move_name": move.get("name", "")}
+			return {"damage": 0, "effectiveness": 1.0, "text": defender.change_atk_stage(-1), "move_name": move.get("name", "")}
 		"lower_def":
-			defender.def_stat = int(defender.def_stat * 0.8)
-			return {"damage": 0, "effectiveness": 1.0, "text": "%s's defense fell!" % defender.pokemon_name, "move_name": move.get("name", "")}
+			return {"damage": 0, "effectiveness": 1.0, "text": defender.change_def_stage(-1), "move_name": move.get("name", "")}
+		"raise_atk":
+			return {"damage": 0, "effectiveness": 1.0, "text": change_atk_stage(1), "move_name": move.get("name", "")}
+		"raise_def":
+			return {"damage": 0, "effectiveness": 1.0, "text": change_def_stage(1), "move_name": move.get("name", "")}
+		"raise_atk_2":
+			return {"damage": 0, "effectiveness": 1.0, "text": change_atk_stage(2), "move_name": move.get("name", "")}
+		"raise_def_2":
+			return {"damage": 0, "effectiveness": 1.0, "text": change_def_stage(2), "move_name": move.get("name", "")}
 		"leech":
 			var drain = maxi(1, defender.max_hp / 8)
 			defender.hp = maxi(0, defender.hp - drain)
@@ -210,6 +234,37 @@ func calc_damage(defender) -> Dictionary:
 	elif eff < 1.0 and eff > 0: text = "Not very effective..."
 	elif eff == 0: text = "No effect!"
 	return {"damage": dmg, "effectiveness": eff, "text": text, "move_name": ""}
+
+func get_effective_atk() -> int:
+	return int(atk * _stage_multiplier(atk_stage))
+
+func get_effective_def() -> int:
+	return int(def_stat * _stage_multiplier(def_stage))
+
+func _stage_multiplier(stage: int) -> float:
+	var clamped = clampi(stage, -6, 6)
+	if clamped >= 0:
+		return (2.0 + clamped) / 2.0
+	else:
+		return 2.0 / (2.0 - clamped)
+
+func change_atk_stage(amount: int) -> String:
+	var old = atk_stage
+	atk_stage = clampi(atk_stage + amount, -6, 6)
+	if atk_stage > old: return "%s's Attack rose!" % pokemon_name
+	elif atk_stage < old: return "%s's Attack fell!" % pokemon_name
+	return "%s's Attack won't go any %s!" % [pokemon_name, "higher" if amount > 0 else "lower"]
+
+func change_def_stage(amount: int) -> String:
+	var old = def_stage
+	def_stage = clampi(def_stage + amount, -6, 6)
+	if def_stage > old: return "%s's Defense rose!" % pokemon_name
+	elif def_stage < old: return "%s's Defense fell!" % pokemon_name
+	return "%s's Defense won't go any %s!" % [pokemon_name, "higher" if amount > 0 else "lower"]
+
+func reset_stages():
+	atk_stage = 0
+	def_stage = 0
 
 func get_catch_rate() -> float:
 	var hp_factor := 1.0 - (float(hp) / float(max_hp)) * 0.7

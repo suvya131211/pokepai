@@ -16,10 +16,26 @@ func _draw():
 
 	var vp = get_viewport_rect().size
 
-	if expanded:
+	if GameManager.show_fly_menu:
+		_draw_fly_menu(vp)
+	elif expanded:
 		_draw_full_map(vp)
 	else:
 		_draw_mini_map(vp)
+
+func _draw_fly_menu(vp: Vector2):
+	var towns = GameManager.towns_visited
+	var menu_w = 250.0
+	var menu_h = 30.0 + towns.size() * 28.0
+	var mx = (vp.x - menu_w) / 2
+	var my = (vp.y - menu_h) / 2
+	draw_rect(Rect2(mx - 4, my - 4, menu_w + 8, menu_h + 8), Color(0.04, 0.06, 0.12, 0.95))
+	draw_rect(Rect2(mx - 4, my - 4, menu_w + 8, menu_h + 8), Color("#4fc3f7"), false, 2.0)
+	draw_string(ThemeDB.fallback_font, Vector2(mx + 10, my + 18), "FLY — Choose destination:", HORIZONTAL_ALIGNMENT_LEFT, menu_w, 14, Color("#ffd700"))
+	for i in towns.size():
+		var ty = my + 32.0 + i * 28.0
+		draw_string(ThemeDB.fallback_font, Vector2(mx + 10, ty + 14), "%d. %s" % [i + 1, towns[i]], HORIZONTAL_ALIGNMENT_LEFT, menu_w - 20, 13, Color.WHITE)
+	draw_string(ThemeDB.fallback_font, Vector2(mx + 10, my + menu_h - 4), "Press 1-%d or ESC" % towns.size(), HORIZONTAL_ALIGNMENT_LEFT, menu_w, 10, Color("#888"))
 
 func _draw_mini_map(vp: Vector2):
 	# Small minimap in top-right corner
