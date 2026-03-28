@@ -178,7 +178,7 @@ func _pewter_city() -> Dictionary:
 			"x": 5, "y": 4, "name": "Brock", "type": "gym_leader",
 			"specialty": "rock", "badge": "Boulder Badge",
 			"dialog": ["I'm Brock, the Pewter City Gym Leader!", "My rock-hard Pokemon will crush you!"],
-			"team": [{"id": 5, "level": 8}, {"id": 10, "level": 10}],  # Geodude, Sandshrew
+			"team": [{"id": 5, "level": 8}, {"id": 10, "level": 9}, {"id": 5, "level": 10}],  # Geodude, Sandshrew, Geodude
 			"win_dialog": ["You beat me! Take the Boulder Badge!", "You've earned my respect."],
 		},
 		"pokecenter": true, "shop": true,
@@ -253,7 +253,7 @@ func _cerulean_city() -> Dictionary:
 			"x": 5, "y": 5, "name": "Misty", "type": "gym_leader",
 			"specialty": "water", "badge": "Cascade Badge",
 			"dialog": ["I'm Misty! My water Pokemon are unstoppable!"],
-			"team": [{"id": 3, "level": 16}, {"id": 17, "level": 18}],  # Squirtle, Gyarados
+			"team": [{"id": 3, "level": 16}, {"id": 17, "level": 18}, {"id": 3, "level": 17}],  # Squirtle, Gyarados, Squirtle
 			"win_dialog": ["You beat my water Pokemon! Take the Cascade Badge!"],
 		},
 		"pokecenter": true, "shop": false,
@@ -332,7 +332,7 @@ func _vermilion_city() -> Dictionary:
 			"x": 5, "y": 6, "name": "Lt. Surge", "type": "gym_leader",
 			"specialty": "electric", "badge": "Thunder Badge",
 			"dialog": ["I'm Lt. Surge! Prepare to be shocked!"],
-			"team": [{"id": 4, "level": 22}, {"id": 18, "level": 24}],  # Pikachu, Raichu
+			"team": [{"id": 4, "level": 22}, {"id": 18, "level": 24}, {"id": 4, "level": 23}],  # Pikachu, Raichu, Pikachu
 			"win_dialog": ["Electrifying battle! The Thunder Badge is yours!"],
 		},
 		"pokecenter": true, "shop": true,
@@ -378,7 +378,7 @@ func _celadon_city() -> Dictionary:
 			"x": 5, "y": 4, "name": "Erika", "type": "gym_leader",
 			"specialty": "grass", "badge": "Rainbow Badge",
 			"dialog": ["I'm Erika. My grass Pokemon are beautiful and strong!"],
-			"team": [{"id": 1, "level": 26}, {"id": 8, "level": 28}],
+			"team": [{"id": 1, "level": 26}, {"id": 8, "level": 28}, {"id": 1, "level": 27}],
 			"win_dialog": ["What a lovely battle! The Rainbow Badge is yours!"],
 		},
 		"pokecenter": true, "shop": true,
@@ -429,7 +429,7 @@ func _saffron_city() -> Dictionary:
 			"x": 5, "y": 4, "name": "Sabrina", "type": "gym_leader",
 			"specialty": "psychic", "badge": "Marsh Badge",
 			"dialog": ["I foresaw your arrival... I'm Sabrina."],
-			"team": [{"id": 9, "level": 34}, {"id": 19, "level": 38}],  # Abra, Mewtwo
+			"team": [{"id": 9, "level": 34}, {"id": 19, "level": 38}, {"id": 9, "level": 36}],  # Abra, Mewtwo, Abra
 			"win_dialog": ["I did not foresee this... The Marsh Badge is yours."],
 		},
 		"pokecenter": true, "shop": false,

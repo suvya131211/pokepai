@@ -128,6 +128,9 @@ func _ready():
 	player.encountered_pokemon.connect(_on_wild_encounter)
 	player.entered_exit.connect(_on_exit_entered)
 
+	# Berry healing on map pickup
+	GameManager.item_collected.connect(_on_item_found)
+
 	# Start paused on title
 	GameManager.change_state(GameManager.GameState.PAUSED)
 
@@ -412,3 +415,14 @@ func _heal_party():
 		pkmn.status = ""
 		for move in pkmn.known_moves:
 			move["current_pp"] = move["pp"]
+
+func _on_item_found(item_type: String):
+	if item_type in ["razz", "nanab", "pinap"]:
+		# Auto-heal lead Pokemon by 10 HP when finding a berry
+		if GameManager.party.size() > 0:
+			var lead = GameManager.party[0]
+			if lead.hp < lead.max_hp:
+				lead.hp = mini(lead.max_hp, lead.hp + 10)
+				story_dialog.show_dialog("", ["Found a %s berry! %s healed 10 HP! (%d/%d)" % [item_type.capitalize(), lead.pokemon_name, lead.hp, lead.max_hp]])
+			else:
+				story_dialog.show_dialog("", ["Found a %s berry! Saved for later." % item_type.capitalize()])

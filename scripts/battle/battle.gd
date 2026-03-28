@@ -21,6 +21,10 @@ var inventory = null
 var player_sprite: Texture2D = null
 var wild_sprite: Texture2D = null
 
+# Party switch
+var party_ref: Array = []
+var show_party_select: bool = false
+
 var phase = Phase.INTRO
 var message: String = ""
 var message_timer: float = 0.0
@@ -97,6 +101,7 @@ func start(party: Array, wild, inv = null):
     trainer_team = []
     trainer_current = 0
 
+    party_ref = GameManager.party
     player_pokemon = party[0] if party.size() > 0 else null
     wild_pokemon = wild
     inventory = inv
@@ -132,6 +137,7 @@ func start_trainer_battle(t_name: String, team: Array):
     trainer_team = team
     trainer_current = 0
 
+    party_ref = GameManager.party
     # Set player pokemon from party
     player_pokemon = GameManager.party[0] if GameManager.party.size() > 0 else null
     if player_pokemon:
@@ -251,6 +257,33 @@ func _process(delta):
 func _input(event):
     if not visible or GameManager.state != GameManager.GameState.BATTLE:
         return
+
+    # Party select overlay input
+    if show_party_select and event is InputEventKey and event.pressed:
+        get_viewport().set_input_as_handled()
+        if event.keycode == KEY_ESCAPE:
+            show_party_select = false
+            message = "What will %s do?" % (player_pokemon.pokemon_name if player_pokemon else "you")
+        elif event.keycode >= KEY_1 and event.keycode <= KEY_6:
+            var idx = event.keycode - KEY_1
+            if idx < party_ref.size() and party_ref[idx] != player_pokemon and party_ref[idx].hp > 0:
+                _switch_pokemon(idx)
+        return
+    if show_party_select and event is InputEventMouseButton and event.pressed:
+        get_viewport().set_input_as_handled()
+        var vp = get_viewport_rect().size
+        var click_pos = get_viewport().get_mouse_position()
+        # Party list is drawn vertically, each slot 40px tall starting at y=100
+        for i in party_ref.size():
+            var slot_rect = Rect2(vp.x * 0.3, 80 + i * 50, vp.x * 0.4, 45)
+            if slot_rect.has_point(click_pos) and party_ref[i] != player_pokemon and party_ref[i].hp > 0:
+                _switch_pokemon(i)
+                return
+        # Click outside = cancel
+        show_party_select = false
+        message = "What will %s do?" % (player_pokemon.pokemon_name if player_pokemon else "you")
+        return
+
     if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
         get_viewport().set_input_as_handled()
         var pos = get_viewport().get_mouse_position()
@@ -314,14 +347,21 @@ func _handle_menu_action(action: String):
                 _player_attack_move(-1)
         "bag":
             if is_trainer_battle:
-                message = "You can't catch trainer Pokemon!"
+                message = "Can't catch trainer Pokemon!"
+            elif wild_pokemon and wild_pokemon.hp > wild_pokemon.max_hp / 2:
+                message = "The wild Pokemon is too healthy! Weaken it first!"
             elif not inventory or inventory.total_balls() <= 0:
                 message = "No Pokeballs left!"
             else:
                 phase = Phase.BAG
                 message = "Choose a ball!"
         "pokemon":
-            message = "No other Pokemon available."
+            if party_ref.size() <= 1:
+                message = "No other Pokemon to switch to!"
+            else:
+                show_party_select = true
+                phase = Phase.MENU  # stays in menu but shows party overlay
+                message = "Choose a Pokemon! (1-%d or click)" % party_ref.size()
         "run":
             _flee()
 
@@ -651,6 +691,16 @@ func _evaluate_catch():
         phase = Phase.CATCH_SHAKE
         message = "..."
 
+func _switch_pokemon(index: int):
+    show_party_select = false
+    var old_name = player_pokemon.pokemon_name if player_pokemon else "???"
+    player_pokemon = party_ref[index]
+    player_sprite = PokemonDB.get_sprite_texture(player_pokemon.id)
+    message = "Come back %s! Go, %s!" % [old_name, player_pokemon.pokemon_name]
+    phase = Phase.PLAYER_ATK  # switching costs a turn - wild attacks after
+    message_timer = 1.5
+    EventTracker.log_event("POKEMON_SWITCH", {"to": player_pokemon.pokemon_name, "index": index})
+
 func _flee():
     EventTracker.log_event("BATTLE_FLEE", {})
     phase = Phase.END
@@ -796,6 +846,32 @@ func _draw():
             _draw_move_menu_leafgreen(w, h, bottom_y)
         Phase.BAG:
             _draw_bag_menu_leafgreen(w, h, bottom_y)
+
+    # Party select overlay
+    if show_party_select:
+        var vp_w = get_viewport_rect().size.x
+        var vp_h = get_viewport_rect().size.y
+        draw_rect(Rect2(0, 0, vp_w, vp_h), Color(0, 0, 0, 0.6))
+        draw_string(ThemeDB.fallback_font, Vector2(vp_w * 0.35, 60), "Choose Pokemon:", HORIZONTAL_ALIGNMENT_LEFT, vp_w * 0.3, 16, Color("#4fc3f7"))
+        for i in party_ref.size():
+            var pkmn = party_ref[i]
+            var slot_y = 80 + i * 50
+            var is_current = (pkmn == player_pokemon)
+            var is_fainted = pkmn.hp <= 0
+            var bg = Color(0.1, 0.15, 0.25) if not is_current else Color(0.15, 0.25, 0.15)
+            if is_fainted: bg = Color(0.2, 0.1, 0.1)
+            draw_rect(Rect2(vp_w * 0.3, slot_y, vp_w * 0.4, 45), bg)
+            draw_rect(Rect2(vp_w * 0.3, slot_y, vp_w * 0.4, 45), Color("#4fc3f7") if not is_fainted else Color("#666"), false, 1.5)
+            # Sprite
+            var tex = PokemonDB.get_sprite_texture(pkmn.id)
+            if tex:
+                draw_texture_rect(tex, Rect2(vp_w * 0.31, slot_y + 2, 40, 40), false)
+            # Name + HP
+            var label = "%d. %s  Lv.%d  HP:%d/%d" % [i + 1, pkmn.pokemon_name, pkmn.level, pkmn.hp, pkmn.max_hp]
+            if is_current: label += " (current)"
+            if is_fainted: label += " (fainted)"
+            draw_string(ThemeDB.fallback_font, Vector2(vp_w * 0.31 + 45, slot_y + 28), label, HORIZONTAL_ALIGNMENT_LEFT, vp_w * 0.35, 12, Color.WHITE if not is_fainted else Color("#666"))
+        draw_string(ThemeDB.fallback_font, Vector2(vp_w * 0.35, 80 + party_ref.size() * 50 + 20), "Press ESC to cancel", HORIZONTAL_ALIGNMENT_LEFT, vp_w * 0.3, 11, Color("#888"))
 
 func _draw_grass_platform(center: Vector2, width: float, height: float):
     # Draw a green grass ellipse (like LeafGreen)

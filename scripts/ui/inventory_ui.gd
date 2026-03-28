@@ -1,11 +1,16 @@
 extends Control
 class_name InventoryUI
 
+var _current_inventory = null
+var _heal_message: String = ""
+var _heal_timer: float = 0.0
+
 func _ready() -> void:
 	visible = false
 	mouse_filter = Control.MOUSE_FILTER_STOP
 
 func toggle(inventory) -> void:
+	_current_inventory = inventory
 	visible = !visible
 	if visible:
 		GameManager.change_state(GameManager.GameState.INVENTORY)
@@ -17,10 +22,33 @@ func _unhandled_input(event: InputEvent) -> void:
 		visible = false
 		GameManager.change_state(GameManager.GameState.WORLD)
 		get_viewport().set_input_as_handled()
+	# Use berry on party Pokemon (press 1-6 to heal that party member)
+	if visible and event is InputEventKey and event.pressed:
+		if event.keycode >= KEY_1 and event.keycode <= KEY_6:
+			var idx = event.keycode - KEY_1
+			if idx < GameManager.party.size():
+				var pkmn = GameManager.party[idx]
+				if pkmn.hp < pkmn.max_hp:
+					var inv = _current_inventory
+					if inv:
+						for berry_type in ["razz", "nanab", "pinap"]:
+							if inv.berries.get(berry_type, 0) > 0:
+								inv.berries[berry_type] -= 1
+								pkmn.hp = mini(pkmn.max_hp, pkmn.hp + 15)
+								_heal_message = "%s used %s berry! +15 HP (%d/%d)" % [pkmn.pokemon_name, berry_type.capitalize(), pkmn.hp, pkmn.max_hp]
+								_heal_timer = 2.0
+								get_viewport().set_input_as_handled()
+								break
+				else:
+					_heal_message = "%s is already at full HP!" % GameManager.party[idx].pokemon_name
+					_heal_timer = 2.0
+					get_viewport().set_input_as_handled()
 
-func _process(_delta: float) -> void:
+func _process(delta: float) -> void:
 	if visible:
 		queue_redraw()
+	if _heal_timer > 0:
+		_heal_timer -= delta
 
 func _draw() -> void:
 	if not visible:
@@ -53,5 +81,19 @@ func _draw() -> void:
 		draw_circle(Vector2(40, y + 8), 8, berry_colors[berry_type])
 		draw_string(ThemeDB.fallback_font, Vector2(60, y + 14), "%s Berry: ?" % berry_type.capitalize(), HORIZONTAL_ALIGNMENT_LEFT, w, 14, Color("#ccc"))
 		y += 32
+
+	# Party list for healing
+	draw_string(ThemeDB.fallback_font, Vector2(24, h * 0.6), "PARTY — Press 1-%d to heal:" % GameManager.party.size(), HORIZONTAL_ALIGNMENT_LEFT, w, 14, Color("#4fc3f7"))
+	var py = h * 0.6 + 20
+	for i in GameManager.party.size():
+		var p = GameManager.party[i]
+		var hp_text = "%d. %s  HP: %d/%d" % [i + 1, p.pokemon_name, p.hp, p.max_hp]
+		var col = Color("#4caf50") if p.hp == p.max_hp else (Color("#ff9800") if p.hp > 0 else Color("#f44336"))
+		draw_string(ThemeDB.fallback_font, Vector2(36, py), hp_text, HORIZONTAL_ALIGNMENT_LEFT, w - 48, 12, col)
+		py += 18
+
+	# Heal message
+	if _heal_timer > 0:
+		draw_string(ThemeDB.fallback_font, Vector2(w / 2 - 100, h - 40), _heal_message, HORIZONTAL_ALIGNMENT_CENTER, 200, 13, Color("#4caf50"))
 
 	draw_string(ThemeDB.fallback_font, Vector2(24, h - 16), "Press I or ESC to close", HORIZONTAL_ALIGNMENT_LEFT, w, 12, Color("#888"))
