@@ -155,7 +155,10 @@ func _pewter_city() -> Dictionary:
 			elif x >= 20 and x <= 25 and y >= 8 and y <= 10:
 				row.append(F if y < 10 else SH)  # Shop
 			else:
-				row.append(G) if (x + y) % 7 != 0 else row.append(FL)
+				if (x + y) % 7 != 0:
+					row.append(G)
+				else:
+					row.append(FL)
 		rows.append(row)
 
 	return _make_area("Pewter City", "town", 30, 20, rows, {
@@ -218,7 +221,7 @@ func _cerulean_city() -> Dictionary:
 		var row = []
 		for x in 30:
 			if x == 0 or x == 29 or y == 0 or y == 19:
-				row.append(TR) if y < 19 else row.append(W)
+				row.append(TR if y < 19 else W)
 			elif x == 14 or x == 15:
 				row.append(P)
 			elif x >= 3 and x <= 8 and y >= 3 and y <= 7:
@@ -300,7 +303,7 @@ func _vermilion_city() -> Dictionary:
 			if x == 0 or x == 29:
 				row.append(TR)
 			elif y == 0 or y == 19:
-				row.append(W) if y == 19 else row.append(TR)
+				row.append(W if y == 19 else TR)
 			elif x == 14 or x == 15:
 				row.append(P)
 			elif x >= 3 and x <= 8 and y >= 4 and y <= 8:
@@ -352,7 +355,10 @@ func _celadon_city() -> Dictionary:
 			elif x >= 22 and x <= 27 and y >= 8 and y <= 10:
 				row.append(SH if y == 10 else F)
 			else:
-				row.append(G) if (x + y) % 5 != 0 else row.append(FL)
+				if (x + y) % 5 != 0:
+					row.append(G)
+				else:
+					row.append(FL)
 		rows.append(row)
 
 	return _make_area("Celadon City", "town", 30, 20, rows, {
