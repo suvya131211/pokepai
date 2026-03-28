@@ -18,7 +18,11 @@ func load_area(area_name: String, player_x: int = -1, player_y: int = -1) -> Dic
 		current_area = null
 
 	# Get area data
+	if not area_data_source:
+		push_error("[AREA] area_data_source is NULL! Recreating...")
+		area_data_source = AreaDataScript.new()
 	var data = area_data_source.get_area(area_name)
+	EventTracker.log_event("AREA_LOAD_DEBUG", {"name": area_name, "data_empty": data.is_empty(), "has_tiles": data.has("tiles"), "tiles_size": data.get("tiles", []).size() if data.has("tiles") else -1})
 	if data.is_empty():
 		push_error("[AREA] Area not found: " + area_name)
 		return {"x": 14, "y": 10}

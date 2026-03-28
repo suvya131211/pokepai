@@ -35,6 +35,7 @@ func _process(_delta):
 			"party_hp": _party_hp_summary(),
 			"time": GameManager.game_time,
 			"weather": GameManager.weather,
+			"player_pos": str(player.global_position) if player else "?",
 		})
 
 func log_event(category: String, data: Dictionary = {}):
