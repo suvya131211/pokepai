@@ -36,26 +36,24 @@ func interact_with_npc(npc: Dictionary, area_name: String) -> void:
             if npc_key in defeated_trainers:
                 npc_dialog_start.emit(npc.get("name", ""), ["You beat me already... I need to train more."])
             else:
-                npc_dialog_start.emit(npc.get("name", "Trainer"), npc.get("dialog", ["Let's battle!"]))
+                # Only emit battle — main.gd will show dialog then start battle
                 var team = _build_team(npc.get("team", []))
-                npc_battle_start.emit({"name": npc.get("name", "Trainer"), "team": team, "key": npc_key})
+                npc_battle_start.emit({"name": npc.get("name", "Trainer"), "team": team, "key": npc_key, "dialog": npc.get("dialog", ["Let's battle!"])})
 
         "rival":
             var battle_idx = npc.get("battle_index", 0)
             if battle_idx in rival_battles_done:
                 npc_dialog_start.emit("Rival", ["Next time I'll definitely win!"])
             else:
-                npc_dialog_start.emit("Rival", npc.get("dialog", ["Let's go!"]))
                 var team = _build_team(npc.get("team", []))
-                npc_battle_start.emit({"name": "Rival", "team": team, "key": npc_key, "is_rival": true, "battle_index": battle_idx})
+                npc_battle_start.emit({"name": "Rival", "team": team, "key": npc_key, "is_rival": true, "battle_index": battle_idx, "dialog": npc.get("dialog", ["Let's go!"])})
 
         "rocket":
             if npc_key in defeated_trainers:
                 npc_dialog_start.emit(npc.get("name", ""), ["Team Rocket... blasting off..."])
             else:
-                npc_dialog_start.emit(npc.get("name", "Rocket Grunt"), npc.get("dialog", []))
                 var team = _build_team(npc.get("team", []))
-                npc_battle_start.emit({"name": npc.get("name", "Rocket Grunt"), "team": team, "key": npc_key})
+                npc_battle_start.emit({"name": npc.get("name", "Rocket Grunt"), "team": team, "key": npc_key, "dialog": npc.get("dialog", ["Prepare for trouble!"])})
 
         "gym_leader":
             # Handled separately via gym system

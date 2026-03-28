@@ -237,14 +237,21 @@ func _on_npc_dialog(speaker, messages):
 
 func _on_npc_battle(npc_data):
 	current_npc_battle_data = npc_data
+	# Show dialog first, then start battle when dialog closes
+	var dialog_lines = npc_data.get("dialog", ["Let's battle!"])
+	var speaker = npc_data.get("name", "Trainer")
+	story_dialog.show_dialog(speaker, dialog_lines, Callable(self, "_begin_npc_fight"))
+
+func _begin_npc_fight():
+	if not current_npc_battle_data:
+		return
 	GameManager.change_state(GameManager.GameState.BATTLE)
-	var team = npc_data.get("team", [])
+	var team = current_npc_battle_data.get("team", [])
 	if team.size() > 0:
 		battle_scene.set_inventory(player.get_node("Inventory"))
 		if battle_scene.has_method("start_trainer_battle"):
-			battle_scene.start_trainer_battle(npc_data.get("name", "Trainer"), team)
+			battle_scene.start_trainer_battle(current_npc_battle_data.get("name", "Trainer"), team)
 		else:
-			# Fallback: fight first Pokemon as wild
 			battle_scene.start(GameManager.party, team[0], player.get_node("Inventory"))
 
 func _start_gym_battle(gym_data):

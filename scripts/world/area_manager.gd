@@ -26,8 +26,11 @@ func load_area(area_name: String, player_x: int = -1, player_y: int = -1) -> Dic
 	current_area = AreaScript.new()
 	current_area.setup(data)
 	current_area_name = area_name
+	current_area.z_index = 0  # ensure tiles draw below player (z_index=10)
 	add_child(current_area)
-	print("[AREA] Loaded: %s (%dx%d), encounters: %d" % [area_name, data.get("width",0), data.get("height",0), data.get("encounters",[]).size()])
+	current_area.queue_redraw()
+	_last_encounter_tile = Vector2i(-999, -999)  # reset encounter tracking
+	print("[AREA] Loaded: %s (%dx%d), encounters: %d, pos: %s" % [area_name, data.get("width",0), data.get("height",0), data.get("encounters",[]).size(), str(current_area.position)])
 
 	# Return spawn position
 	if player_x >= 0 and player_y >= 0:
