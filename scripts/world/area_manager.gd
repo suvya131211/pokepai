@@ -129,3 +129,13 @@ func get_area_size() -> Vector2:
 	if current_area:
 		return Vector2(current_area.width * 16, current_area.height * 16)
 	return Vector2(480, 320)
+
+func check_hidden_item(world_x: float, world_y: float) -> Dictionary:
+	var tx = int(world_x / 16)
+	var ty = int(world_y / 16)
+	if current_area:
+		for item in current_area.hidden_items:
+			if item["x"] == tx and item["y"] == ty and not item.get("found", false):
+				item["found"] = true
+				return item
+	return {}

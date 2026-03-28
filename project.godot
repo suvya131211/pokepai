@@ -23,6 +23,7 @@ MoveData="*res://scripts/data/move_data.gd"
 EventTracker="*res://scripts/autoload/event_tracker.gd"
 StoryEvents="*res://scripts/data/story_events.gd"
 SaveManager="*res://scripts/autoload/save_manager.gd"
+PCStorage="*res://scripts/autoload/pc_storage.gd"
 
 [display]
 

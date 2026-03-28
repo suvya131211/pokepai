@@ -648,6 +648,9 @@ func _apply_end_of_turn_effects():
 func _on_wild_fainted():
     var xp_gain = wild_pokemon.level * 10
     leveled_up = player_pokemon.gain_xp(xp_gain) if player_pokemon else false
+    # Gain EVs from defeated Pokemon
+    if player_pokemon:
+        player_pokemon.gain_evs(wild_pokemon.species)
     EventTracker.log_event("WILD_FAINTED", {"name": wild_pokemon.pokemon_name, "xp_gained": xp_gain, "leveled_up": leveled_up})
 
     if is_trainer_battle:
@@ -853,6 +856,9 @@ func _draw():
         # Flash overlay
         if wild_flash > 0:
             draw_circle(Vector2(enemy_x + shake_x, enemy_y - spr_size * 0.3), spr_size * 0.45, Color(1, 1, 1, wild_flash * 0.4))
+        # Shiny indicator
+        if wild_pokemon.is_shiny:
+            draw_string(ThemeDB.fallback_font, Vector2(enemy_x - 10, enemy_y - 50), "★", HORIZONTAL_ALIGNMENT_LEFT, 20, 14, Color("#ffd700"))
 
     # === PLAYER POKEMON (bottom-left, on platform, shown from behind = larger) ===
     var player_x = w * 0.25
@@ -868,6 +874,9 @@ func _draw():
             draw_arc(Vector2(player_x + shake_x, player_y - spr_size * 0.25), spr_size * 0.45, 0, TAU, 16, Color.WHITE, 2.0)
         if player_flash > 0:
             draw_circle(Vector2(player_x + shake_x, player_y - spr_size * 0.25), spr_size * 0.5, Color(1, 0.3, 0.3, player_flash * 0.4))
+        # Shiny indicator
+        if player_pokemon.is_shiny:
+            draw_string(ThemeDB.fallback_font, Vector2(player_x - 10, player_y - 40), "★", HORIZONTAL_ALIGNMENT_LEFT, 20, 14, Color("#ffd700"))
 
     # === ENEMY INFO PANEL (top-left) ===
     if wild_pokemon:

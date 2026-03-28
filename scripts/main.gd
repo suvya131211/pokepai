@@ -14,6 +14,7 @@ var InstructionsScript = preload("res://scripts/ui/instructions_panel.gd")
 var DayNightScript = preload("res://scripts/world/day_night.gd")
 var WeatherScript = preload("res://scripts/world/weather.gd")
 var MinimapScript = preload("res://scripts/ui/minimap_overlay.gd")
+var SummaryScript = preload("res://scripts/ui/summary_screen.gd")
 
 @onready var player = $World/Player
 
@@ -28,6 +29,8 @@ var title_screen
 var starter_select
 var day_night
 var weather_system
+
+var summary_screen = null
 
 var current_npc_battle_data = null
 var npc_interaction_cooldown: float = 0.0
@@ -116,6 +119,10 @@ func _ready():
 	starter_select.set_anchors_preset(Control.PRESET_FULL_RECT)
 	starter_select.starter_chosen.connect(_on_starter_chosen)
 
+	summary_screen = SummaryScript.new()
+	summary_screen.set_anchors_preset(Control.PRESET_FULL_RECT)
+	ui_layer.add_child(summary_screen)
+
 	# Title screen
 	var title_layer = CanvasLayer.new()
 	title_layer.layer = 30
@@ -194,23 +201,48 @@ func _process(_delta):
 			var npc = area_manager.check_npc_facing(player.global_position.x, player.global_position.y, player.direction)
 			if not npc.is_empty():
 				npc_handler.interact_with_npc(npc, area_manager.get_current_area_name())
-			# Check gym leader separately (independent of NPC list)
-			elif area_manager.current_area and not area_manager.current_area.gym_leader.is_empty():
-				var gl = area_manager.current_area.gym_leader
-				var gl_x = gl.get("x", -1)
-				var gl_y = gl.get("y", -1)
-				var player_tile_x = int(player.global_position.x / 16)
-				var player_tile_y = int(player.global_position.y / 16)
-				var face_dx = 0
-				var face_dy = 0
+			# Fishing (E facing water)
+			elif GameManager.party.size() > 0 and area_manager.current_area:
+				var face_dx_f = 0
+				var face_dy_f = 0
 				match player.direction:
-					"up": face_dy = -1
-					"down": face_dy = 1
-					"left": face_dx = -1
-					"right": face_dx = 1
-				if (player_tile_x + face_dx == gl_x and player_tile_y + face_dy == gl_y) or \
-				   (player_tile_x == gl_x and player_tile_y == gl_y):
-					_start_gym_battle(gl)
+					"up": face_dy_f = -1
+					"down": face_dy_f = 1
+					"left": face_dx_f = -1
+					"right": face_dx_f = 1
+				var fx = int(player.global_position.x / 16) + face_dx_f
+				var fy = int(player.global_position.y / 16) + face_dy_f
+				var tile = area_manager.current_area.get_tile(fx, fy)
+				if tile == area_manager.current_area.Tile.WATER:
+					_try_fishing()
+				elif area_manager.current_area and not area_manager.current_area.gym_leader.is_empty():
+					var gl = area_manager.current_area.gym_leader
+					var gl_x = gl.get("x", -1)
+					var gl_y = gl.get("y", -1)
+					var player_tile_x = int(player.global_position.x / 16)
+					var player_tile_y = int(player.global_position.y / 16)
+					var face_dx = 0
+					var face_dy = 0
+					match player.direction:
+						"up": face_dy = -1
+						"down": face_dy = 1
+						"left": face_dx = -1
+						"right": face_dx = 1
+					if (player_tile_x + face_dx == gl_x and player_tile_y + face_dy == gl_y) or \
+					   (player_tile_x == gl_x and player_tile_y == gl_y):
+						_start_gym_battle(gl)
+
+func _try_fishing():
+	if randf() < 0.6:  # 60% chance to hook something
+		# Water Pokemon encounter
+		var water_pokemon = [
+			{"species_id": 3, "min_level": 5, "max_level": 15},   # Squirtle
+			{"species_id": 17, "min_level": 10, "max_level": 20},  # Gyarados (rare)
+		]
+		var entry = water_pokemon[0] if randf() < 0.8 else water_pokemon[1]
+		story_dialog.show_dialog("", ["...!", "A Pokemon is on the hook!"], Callable(self, "_on_wild_encounter").bind(entry))
+	else:
+		story_dialog.show_dialog("", ["Not even a nibble..."])
 
 func _on_wild_encounter(encounter_data):
 	if GameManager.state != GameManager.GameState.WORLD:
@@ -429,11 +461,15 @@ func _on_battle_ended(result_str, wild):
 		"caught":
 			wild.hp = wild.max_hp  # Heal caught Pokemon to full HP
 			wild.status = ""
-			GameManager.party.append(wild)
+			if GameManager.party.size() < 6:
+				GameManager.party.append(wild)
+				player.follower_pokemon = wild
+				player._follower_pos = player.global_position
+				story_dialog.show_dialog("", ["You caught %s!" % wild.pokemon_name])
+			else:
+				PCStorage.deposit(wild)
+				story_dialog.show_dialog("", ["You caught %s!" % wild.pokemon_name, "Party is full! %s was sent to the PC." % wild.pokemon_name])
 			GameManager.add_to_pokedex(wild.id, true)
-			player.follower_pokemon = wild
-			player._follower_pos = player.global_position
-			story_dialog.show_dialog("", ["You caught %s!" % wild.pokemon_name])
 		"defeated", "trainer_defeated":
 			# Check evolution
 			for i in GameManager.party.size():
@@ -565,6 +601,9 @@ func _unhandled_input(event):
 			_save_game()
 		elif event.keycode == KEY_F9:
 			_load_game()
+		elif event.keycode == KEY_C and GameManager.state == GameManager.GameState.WORLD:
+			if GameManager.party.size() > 0 and summary_screen:
+				summary_screen.show_summary(GameManager.party[0], 0)
 		elif event.keycode == KEY_T and GameManager.state == GameManager.GameState.WORLD:
 			if _check_fly():
 				_open_fly_menu()
@@ -621,12 +660,16 @@ func _load_game():
 	story_dialog.show_dialog("", ["Game loaded!"])
 
 func _on_item_found(item_type: String):
-	if item_type in ["razz", "nanab", "pinap"]:
+	if item_type == "ultraball":
+		var inv = player.get_node("Inventory")
+		inv.balls["ultraball"] = inv.balls.get("ultraball", 0) + 1
+		story_dialog.show_dialog("", ["Found a hidden Ultra Ball!"])
+	elif item_type in ["razz", "nanab", "pinap"]:
 		# Auto-heal lead Pokemon by 10 HP when finding a berry
 		if GameManager.party.size() > 0:
 			var lead = GameManager.party[0]
 			if lead.hp < lead.max_hp:
 				lead.hp = mini(lead.max_hp, lead.hp + 10)
-				story_dialog.show_dialog("", ["Found a %s berry! %s healed 10 HP! (%d/%d)" % [item_type.capitalize(), lead.pokemon_name, lead.hp, lead.max_hp]])
+				story_dialog.show_dialog("", ["Found a hidden %s berry! %s healed 10 HP! (%d/%d)" % [item_type.capitalize(), lead.pokemon_name, lead.hp, lead.max_hp]])
 			else:
-				story_dialog.show_dialog("", ["Found a %s berry! Saved for later." % item_type.capitalize()])
+				story_dialog.show_dialog("", ["Found a hidden %s berry! Saved for later." % item_type.capitalize()])

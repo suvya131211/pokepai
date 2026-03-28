@@ -79,6 +79,11 @@ func _physics_process(delta: float) -> void:
 			if not item.is_empty():
 				item["collected"] = true
 				GameManager.item_collected.emit(item["type"])
+
+			var hidden = area_manager.check_hidden_item(global_position.x, global_position.y)
+			if not hidden.is_empty():
+				GameManager.item_collected.emit(hidden["type"])
+				EventTracker.log_event("HIDDEN_ITEM_FOUND", {"type": hidden["type"]})
 	else:
 		velocity = Vector2.ZERO
 

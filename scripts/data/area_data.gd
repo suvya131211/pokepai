@@ -135,6 +135,10 @@ func _route_1() -> Dictionary:
 			{"species_id": 10, "min_level": 2, "max_level": 4, "weight": 20},  # Sandshrew
 			{"species_id": 1, "min_level": 3, "max_level": 5, "weight": 10},   # Bulbasaur (rare)
 		],
+		"hidden_items": [
+			{"x": 8, "y": 15, "type": "ultraball", "found": false},
+			{"x": 22, "y": 8, "type": "razz", "found": false},
+		],
 	})
 
 func _pewter_city() -> Dictionary:
@@ -214,6 +218,11 @@ func _mt_moon() -> Dictionary:
 			{"species_id": 15, "min_level": 6, "max_level": 9, "weight": 15},   # Clefairy
 			{"species_id": 9, "min_level": 7, "max_level": 10, "weight": 10},   # Abra
 			{"species_id": 13, "min_level": 8, "max_level": 11, "weight": 5},   # Aron (rare)
+		],
+		"hidden_items": [
+			{"x": 15, "y": 5, "type": "razz", "found": false},
+			{"x": 5, "y": 18, "type": "ultraball", "found": false},
+			{"x": 25, "y": 10, "type": "razz", "found": false},
 		],
 	})
 
@@ -368,6 +377,10 @@ func _celadon_city() -> Dictionary:
 		"exits": [
 			{"x": 0, "y": 10, "target_area": "Vermilion City", "target_x": 28, "target_y": 10},
 			{"x": 29, "y": 10, "target_area": "Saffron City", "target_x": 1, "target_y": 10},
+		],
+		"hidden_items": [
+			{"x": 10, "y": 7, "type": "razz", "found": false},
+			{"x": 20, "y": 14, "type": "ultraball", "found": false},
 		],
 		"npcs": [
 			{"x": 24, "y": 4, "name": "Nurse Joy", "type": "nurse", "dialog": ["Healed!"]},

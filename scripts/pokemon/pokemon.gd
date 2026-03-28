@@ -53,6 +53,21 @@ const NATURES = {
 var nature: String = "Hardy"
 var ability: String = ""
 
+# IVs (Individual Values) — hidden stat variation 0-31
+var iv_hp: int = 0
+var iv_atk: int = 0
+var iv_def: int = 0
+
+# EVs (Effort Values) — earned through battle
+var ev_hp: int = 0
+var ev_atk: int = 0
+var ev_def: int = 0
+const MAX_TOTAL_EVS = 510
+const MAX_SINGLE_EV = 252
+
+# Shiny
+var is_shiny: bool = false
+
 func _init(species_id: int, lvl: int = 1) -> void:
 	species = PokemonDB.get_species(species_id)
 	id = species_id
@@ -60,10 +75,21 @@ func _init(species_id: int, lvl: int = 1) -> void:
 	type = species["type"]
 	color = species["color"]
 	level = lvl
-	max_hp = int(species["hp"] * (1.0 + level * 0.1))
+
+	# Generate random IVs
+	iv_hp = randi_range(0, 31)
+	iv_atk = randi_range(0, 31)
+	iv_def = randi_range(0, 31)
+
+	# Shiny check (~0.2% chance)
+	is_shiny = randf() < (1.0 / 512.0)
+	if is_shiny:
+		color = Color(color.r * 0.7 + 0.3, color.g * 0.7 + 0.3, color.b * 0.5, color.a)
+
+	max_hp = int((species["hp"] + iv_hp + ev_hp / 4) * (1.0 + level * 0.1))
 	hp = max_hp
-	atk = int(species["atk"] * (1.0 + level * 0.05))
-	def_stat = int(species["def"] * (1.0 + level * 0.05))
+	atk = int((species["atk"] + iv_atk + ev_atk / 4) * (1.0 + level * 0.05))
+	def_stat = int((species["def"] + iv_def + ev_def / 4) * (1.0 + level * 0.05))
 	xp_to_next = level * 20
 
 	# Load moves from MoveData autoload
@@ -99,12 +125,22 @@ func gain_xp(amount: int) -> bool:
 		xp -= xp_to_next
 		level += 1
 		xp_to_next = level * 20
-		max_hp = int(species["hp"] * (1.0 + level * 0.1))
+		max_hp = int((species["hp"] + iv_hp + ev_hp / 4) * (1.0 + level * 0.1))
 		hp = min(hp + 5, max_hp)
-		atk = int(species["atk"] * (1.0 + level * 0.05))
-		def_stat = int(species["def"] * (1.0 + level * 0.05))
+		atk = int((species["atk"] + iv_atk + ev_atk / 4) * (1.0 + level * 0.05))
+		def_stat = int((species["def"] + iv_def + ev_def / 4) * (1.0 + level * 0.05))
 		return true  # leveled up
 	return false
+
+func gain_evs(defeated_species: Dictionary):
+	var hp_gain = 1 if defeated_species.get("hp", 0) > 50 else 0
+	var atk_gain = 1 if defeated_species.get("atk", 0) > 50 else 0
+	var def_gain = 1 if defeated_species.get("def", 0) > 50 else 0
+	var total = ev_hp + ev_atk + ev_def
+	if total < MAX_TOTAL_EVS:
+		ev_hp = mini(MAX_SINGLE_EV, ev_hp + hp_gain)
+		ev_atk = mini(MAX_SINGLE_EV, ev_atk + atk_gain)
+		ev_def = mini(MAX_SINGLE_EV, ev_def + def_gain)
 
 func is_alive() -> bool:
 	return hp > 0

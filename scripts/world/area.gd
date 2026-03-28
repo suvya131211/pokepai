@@ -15,6 +15,7 @@ var has_pokecenter: bool = false
 var has_shop: bool = false
 var gym_leader: Dictionary = {}  # {name, type, team, badge}
 var requires_hm: String = ""  # "cut", "surf", "" for none
+var hidden_items: Array = []  # [{x, y, type, found}]
 
 # Tile types (reuse from world_generator)
 enum Tile {
@@ -77,6 +78,7 @@ func setup(data: Dictionary) -> void:
 	has_shop = data.get("shop", false)
 	gym_leader = data.get("gym_leader", {})
 	requires_hm = data.get("requires_hm", "")
+	hidden_items = data.get("hidden_items", [])
 	# Force exit tiles and their neighbors to be walkable
 	for ex in exits:
 		var ex_x = ex.get("x", -1)
