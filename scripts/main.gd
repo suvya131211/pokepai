@@ -248,23 +248,36 @@ func _on_exit_entered(exit_data):
 	elif sy >= area_h - 2: sy = area_h - 3
 	if sx <= 1: sx = 2
 	elif sx >= area_w - 2: sx = area_w - 3
-	# Search for walkable tile near spawn (spiral outward)
-	var found_walkable = false
-	for radius in range(0, 6):
-		for dy in range(-radius, radius + 1):
-			for dx in range(-radius, radius + 1):
-				var check_x = sx + dx
-				var check_y = sy + dy
-				if check_x >= 0 and check_x < area_w and check_y >= 0 and check_y < area_h:
-					if area_manager.current_area.is_walkable(check_x, check_y):
-						sx = check_x
-						sy = check_y
-						found_walkable = true
-						break
-			if found_walkable:
-				break
-		if found_walkable:
+	# Search for nearest walkable tile from the path/center column
+	# Prefer the center path (x=14,15) at the target y
+	var best_x = sx
+	var best_y = sy
+	var found = false
+	# First try: the path column at target y
+	for try_x in [14, 15, 13, 16, sx, sx + 1, sx - 1]:
+		if try_x >= 0 and try_x < area_w and area_manager.current_area.is_walkable(try_x, sy):
+			best_x = try_x
+			best_y = sy
+			found = true
 			break
+	# Second try: spiral from adjusted position
+	if not found:
+		for radius in range(0, 8):
+			for dy in range(-radius, radius + 1):
+				for dx in range(-radius, radius + 1):
+					var cx = sx + dx
+					var cy = sy + dy
+					if cx >= 0 and cx < area_w and cy >= 0 and cy < area_h:
+						if area_manager.current_area.is_walkable(cx, cy):
+							best_x = cx
+							best_y = cy
+							found = true
+							break
+				if found: break
+			if found: break
+	sx = best_x
+	sy = best_y
+	EventTracker.log_event("SPAWN_PLACED", {"area": target_area, "tile": str(Vector2i(sx, sy)), "walkable": area_manager.current_area.is_walkable(sx, sy)})
 	player.global_position = Vector2(sx * 16 + 8, sy * 16 + 8)
 	player.exit_cooldown = 3.0
 	npc_interaction_cooldown = 3.0  # prevent NPC auto-trigger on area load
