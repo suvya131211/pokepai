@@ -278,9 +278,15 @@ func _input(event):
             if event.keycode == KEY_ESCAPE or event.keycode == KEY_BACKSPACE:
                 phase = Phase.MENU
                 message = "What will %s do?" % (player_pokemon.pokemon_name if player_pokemon else "you")
+            elif event.keycode == KEY_F:
+                # F again in FIGHT phase = use first move
+                if player_pokemon and player_pokemon.known_moves.size() > 0:
+                    print("[BATTLE] F key → auto-use move 0")
+                    _player_attack_move(0)
             elif event.keycode >= KEY_1 and event.keycode <= KEY_4:
                 var idx = event.keycode - KEY_1
                 if player_pokemon and idx < player_pokemon.known_moves.size():
+                    print("[BATTLE] Key %d → use move %d" % [idx + 1, idx])
                     _player_attack_move(idx)
         elif phase == Phase.BAG:
             if event.keycode == KEY_ESCAPE or event.keycode == KEY_BACKSPACE:
@@ -288,13 +294,18 @@ func _input(event):
                 message = "What will %s do?" % (player_pokemon.pokemon_name if player_pokemon else "you")
 
 func _handle_menu_action(action: String):
-    print("[BATTLE] Menu action: %s" % action)
+    print("[BATTLE] Menu action: %s, player_pokemon=%s, moves=%d" % [
+        action,
+        player_pokemon.pokemon_name if player_pokemon else "NULL",
+        player_pokemon.known_moves.size() if player_pokemon else 0])
     match action:
         "fight":
             if player_pokemon and player_pokemon.known_moves.size() > 0:
                 phase = Phase.FIGHT
-                message = "Choose a move!"
+                message = "Choose a move! (Press 1-%d or click)" % player_pokemon.known_moves.size()
+                print("[BATTLE] Phase → FIGHT. %d moves available." % player_pokemon.known_moves.size())
             else:
+                print("[BATTLE] No moves! Using fallback attack.")
                 _player_attack_move(-1)
         "bag":
             if is_trainer_battle:
@@ -400,6 +411,10 @@ func _handle_bag_click(pos: Vector2, w: float, h: float):
 
 # ─── Combat actions ───────────────────────────────────────────────────────────
 func _player_attack_move(move_index: int):
+    print("[BATTLE] _player_attack_move(%d) — %s HP:%d/%d" % [
+        move_index, player_pokemon.pokemon_name if player_pokemon else "NULL",
+        player_pokemon.hp if player_pokemon else 0,
+        player_pokemon.max_hp if player_pokemon else 0])
     phase = Phase.PLAYER_ATK
     selected_move_index = move_index
     if player_pokemon == null:

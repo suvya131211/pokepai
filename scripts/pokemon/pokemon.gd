@@ -40,6 +40,9 @@ func _init(species_id: int, lvl: int = 1) -> void:
 			mdata["current_pp"] = mdata["pp"]
 			known_moves.append(mdata)
 			move_pp.append(mdata["pp"])
+	print("[POKEMON] Created %s Lv.%d with %d moves: %s" % [
+		pokemon_name, level, known_moves.size(),
+		str(known_moves.map(func(m): return m.get("name", "?")))])
 
 func gain_xp(amount: int) -> bool:
 	xp += amount
