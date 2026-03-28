@@ -18,6 +18,9 @@ var game_time: float = 8.0       # 0-24 hours
 # Towns visited (for fast travel)
 var towns_visited: Array[String] = ["Starter Town"]
 
+# Badge progress
+var badges_earned: int = 0
+
 # Signals
 signal state_changed(new_state: GameState)
 signal pokemon_caught(pokemon)

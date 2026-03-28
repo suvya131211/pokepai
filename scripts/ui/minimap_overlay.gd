@@ -85,6 +85,10 @@ func _draw_mini_map(vp: Vector2):
 	# Legend hint
 	draw_string(ThemeDB.fallback_font, Vector2(mx, my + map_h + 24), "[M] expand", HORIZONTAL_ALIGNMENT_LEFT, map_w, 9, Color("#666"))
 
+	# Badge count display
+	var badge_count = GameManager.badges_earned
+	draw_string(ThemeDB.fallback_font, Vector2(mx, my + map_h + 38), "Badges: %d/8" % badge_count, HORIZONTAL_ALIGNMENT_LEFT, map_w, 10, Color("#ffd700"))
+
 func _draw_full_map(vp: Vector2):
 	# Large centered map overlay
 	var map_w = vp.x * 0.6

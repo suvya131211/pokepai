@@ -62,6 +62,22 @@ func interact_with_npc(npc: Dictionary, area_name: String) -> void:
             # Handled separately via gym system
             pass
 
+        "gym_leader_2":
+            var gl_badge = npc.get("badge", "")
+            if gl_badge in defeated_gyms:
+                npc_dialog_start.emit(npc.get("name", ""), ["You've already earned my badge. Good luck on your journey!"])
+            else:
+                var team = _build_team(npc.get("team", []))
+                npc_battle_start.emit({
+                    "name": npc.get("name", "Gym Leader"),
+                    "team": team,
+                    "key": npc_key,
+                    "is_gym": true,
+                    "badge": gl_badge,
+                    "dialog": npc.get("dialog", ["Let's battle!"]),
+                    "win_dialog": npc.get("win_dialog", ["You win!"])
+                })
+
         "elite4":
             if npc.get("name", "") in defeated_elite4:
                 npc_dialog_start.emit(npc.get("name", ""), ["You've proven your strength..."])

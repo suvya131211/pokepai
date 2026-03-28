@@ -48,6 +48,7 @@ func _ready():
 	# NPC handler
 	npc_handler = NpcHandlerScript.new()
 	add_child(npc_handler)
+	npc_handler.add_to_group("npc_handler")
 	npc_handler.npc_dialog_start.connect(_on_npc_dialog)
 	npc_handler.npc_battle_start.connect(_on_npc_battle)
 	npc_handler.heal_pokemon.connect(_heal_party)
@@ -232,6 +233,16 @@ func _on_exit_entered(exit_data):
 	print("[MAIN] Exit triggered → %s at (%d, %d)" % [target_area, target_x, target_y])
 	if target_area.is_empty():
 		return
+
+	# Pokemon League gate — require 8 badges
+	if target_area == "Pokemon League" and npc_handler.get_badge_count() < 8:
+		story_dialog.show_dialog("Guard", [
+			"Halt! You need all 8 Gym Badges to enter the Pokemon League!",
+			"You currently have %d/8 badges." % npc_handler.get_badge_count(),
+			"Go back and defeat more Gym Leaders!",
+		])
+		player.exit_cooldown = 3.0
+		return  # Don't transition
 	var from_area = area_manager.get_current_area_name()
 	var spawn = area_manager.load_area(target_area, target_x, target_y)
 	if spawn.is_empty():
@@ -311,6 +322,63 @@ func _show_next_story_event():
 	else:
 		story_dialog.show_dialog(speaker, lines, Callable(self, "_show_next_story_event"))
 
+func _show_gym_victory_story(gym_name: String, badge: String):
+	var badge_count = npc_handler.get_badge_count()
+	var story_lines = []
+
+	match gym_name:
+		"Brock":
+			story_lines = [
+				"Brock: You've got real talent, kid!",
+				"Take the Boulder Badge as proof of your victory.",
+				"The path east leads to Mt. Moon. Be careful in those caves.",
+				"I've heard strange things about Team Shadow lurking there...",
+				"Badge 1/8 collected!",
+			]
+		"Misty":
+			story_lines = [
+				"Misty: Wow! Your Pokemon are impressive!",
+				"Here's the Cascade Badge. You've earned it!",
+				"The dark energy near the river... I think it's connected to something bigger.",
+				"Head south through Route 3 to reach Vermilion City.",
+				"Badge 2/8 collected!",
+			]
+		"Lt. Surge":
+			story_lines = [
+				"Lt. Surge: Now THAT was an electrifying battle!",
+				"The Thunder Badge is yours, soldier!",
+				"I've been monitoring some strange signals from Celadon City.",
+				"Team Shadow might be operating a base there. Stay sharp!",
+				"Badge 3/8 collected!",
+			]
+		"Erika":
+			story_lines = [
+				"Erika: What a beautiful battle! Your bond with your Pokemon is lovely.",
+				"Please accept the Rainbow Badge!",
+				"I've sensed the Void Energy affecting the plants in my garden...",
+				"Koga's Gym is also here in Celadon. You'll need his badge too.",
+				"Badge 4/8 collected!",
+			]
+		_:
+			# Generic for Koga, Sabrina, Blaine, Giovanni
+			story_lines = [
+				"%s: Well fought! You've proven yourself worthy." % gym_name,
+				"Take the %s as a symbol of your strength!" % badge,
+				"Badge %d/8 collected!" % badge_count,
+			]
+
+	if badge_count >= 8:
+		story_lines.append("")
+		story_lines.append("You've collected all 8 badges!")
+		story_lines.append("The Pokemon League Championship is now open to you!")
+		story_lines.append("Head north from Saffron City to reach the Pokemon League!")
+		story_lines.append("The Elite Four and the Champion await your challenge!")
+	elif badge_count >= 5:
+		story_lines.append("You're getting closer to the Pokemon League!")
+		story_lines.append("Keep collecting badges — %d more to go!" % (8 - badge_count))
+
+	story_dialog.show_dialog(gym_name, story_lines)
+
 func _on_npc_dialog(speaker, messages):
 	npc_interaction_cooldown = 2.0  # prevent re-trigger after dialog
 	story_dialog.show_dialog(speaker, messages)
@@ -382,17 +450,28 @@ func _on_battle_ended(result_str, wild):
 					var gym_name = current_npc_battle_data.get("name", "")
 					npc_handler.mark_gym_defeated(badge)
 					StoryEvents.on_gym_defeated(gym_name, badge)
+					GameManager.badges_earned = npc_handler.get_badge_count()
 					var win_msgs = current_npc_battle_data.get("win_dialog", [])
 					if win_msgs.size() > 0:
 						story_dialog.show_dialog(current_npc_battle_data.get("name", ""), win_msgs)
-					story_dialog.show_dialog("", ["You earned the %s!" % badge, "Badges: %d/8" % npc_handler.get_badge_count()])
+					_show_gym_victory_story(gym_name, badge)
 				if current_npc_battle_data.get("is_champion", false):
+					StoryEvents.on_champion_defeated()
 					story_dialog.show_dialog("Prof. Oak", [
-						"Congratulations! You've defeated the Champion!",
-						"You are now the Pokemon League Champion!",
-						"Your journey through Kanto is complete!",
-						"But there are still Pokemon to catch...",
-						"Thank you for playing Pokepai!",
+						"...",
+						"I can't believe it... You've done it!",
+						"You've defeated the Champion and saved the region from the Void!",
+						"MEWTWO's barrier has been restored. DARKRAI has been sealed away.",
+						"The Pokemon of the world are safe, thanks to you.",
+						"",
+						"You started as a young trainer from Pallet Town...",
+						"And now you are the Pokemon League CHAMPION!",
+						"",
+						"But your journey doesn't end here.",
+						"There are still Pokemon to discover, battles to fight, and friends to make.",
+						"",
+						"Thank you for playing POKEPAI!",
+						"--- THE END ---",
 					])
 				current_npc_battle_data = null
 		"fled":
