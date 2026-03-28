@@ -26,7 +26,7 @@ var moves: Dictionary = {
     "Vine Whip": {"type":"grass","power":45,"accuracy":100,"pp":25,"category":"physical","effect":"none"},
     "Razor Leaf": {"type":"grass","power":55,"accuracy":95,"pp":25,"category":"physical","effect":"none"},
     "Sleep Powder": {"type":"grass","power":0,"accuracy":75,"pp":15,"category":"status","effect":"sleep"},
-    "Leech Seed": {"type":"grass","power":0,"accuracy":90,"pp":10,"category":"status","effect":"none"},
+    "Leech Seed": {"type":"grass","power":0,"accuracy":90,"pp":10,"category":"status","effect":"leech"},
 
     # Electric
     "Thunder Shock": {"type":"electric","power":40,"accuracy":100,"pp":30,"category":"special","effect":"paralyze"},
@@ -68,7 +68,7 @@ var moves: Dictionary = {
     # Steel/Dragon
     "Iron Tail": {"type":"steel","power":100,"accuracy":75,"pp":15,"category":"physical","effect":"lower_def"},
     "Metal Claw": {"type":"steel","power":50,"accuracy":95,"pp":35,"category":"physical","effect":"none"},
-    "Dragon Rage": {"type":"dragon","power":0,"accuracy":100,"pp":10,"category":"special","effect":"none"},
+    "Dragon Rage": {"type":"dragon","power":0,"accuracy":100,"pp":10,"category":"special","effect":"fixed_40"},
     "Dragon Claw": {"type":"dragon","power":80,"accuracy":100,"pp":15,"category":"physical","effect":"none"},
 
     # Fighting

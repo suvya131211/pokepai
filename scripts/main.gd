@@ -29,6 +29,7 @@ var day_night
 var weather_system
 
 var current_npc_battle_data = null
+var npc_interaction_cooldown: float = 0.0
 
 var area_name_display: String = ""
 var area_name_timer: float = 0.0
@@ -164,13 +165,15 @@ func _process(_delta):
 		area_name_timer -= _delta
 		if area_name_timer <= 0:
 			area_name_display = ""
+	if npc_interaction_cooldown > 0:
+		npc_interaction_cooldown -= _delta
 	if GameManager.state == GameManager.GameState.WORLD:
 		if Input.is_action_just_pressed("open_pokedex"):
 			pokedex.toggle()
 		if Input.is_action_just_pressed("open_inventory"):
 			inventory_ui.toggle(player.get_node("Inventory"))
 		# NPC interaction (E key)
-		if Input.is_action_just_pressed("interact") and area_manager:
+		if Input.is_action_just_pressed("interact") and area_manager and npc_interaction_cooldown <= 0:
 			var npc = area_manager.check_npc(player.global_position.x, player.global_position.y)
 			if not npc.is_empty():
 				npc_handler.interact_with_npc(npc, area_manager.get_current_area_name())
@@ -228,6 +231,7 @@ func _on_exit_entered(exit_data):
 	_show_area_name(target_area)
 
 func _on_npc_dialog(speaker, messages):
+	npc_interaction_cooldown = 1.0  # prevent re-trigger after dialog
 	story_dialog.show_dialog(speaker, messages)
 
 func _on_npc_battle(npc_data):
@@ -301,16 +305,26 @@ func _on_battle_ended(result_str, wild):
 				current_npc_battle_data = null
 		"fled":
 			pass
-	# Offer healing if player Pokemon is hurt and has berries
-	var inv = player.get_node("Inventory")
-	if player_pokemon_hurt() and inv.berries.get("razz", 0) > 0:
-		var pkmn = GameManager.party[0]
-		pkmn.hp = mini(pkmn.max_hp, pkmn.hp + int(pkmn.max_hp * 0.3))
-		inv.berries["razz"] -= 1
+	# If lead Pokemon fainted, heal party fully (simulate "blacking out" to Pokemon Center)
+	if GameManager.party.size() > 0 and GameManager.party[0].hp <= 0:
+		_heal_party()
 		story_dialog.show_dialog("", [
-			"%s has %d/%d HP." % [pkmn.pokemon_name, pkmn.hp, pkmn.max_hp],
-			"Used a Razz Berry to heal!",
+			"You blacked out!",
+			"You were rushed to the nearest Pokemon Center...",
+			"Your Pokemon have been fully healed!",
 		])
+	else:
+		# Offer healing if player Pokemon is hurt and has berries
+		var inv = player.get_node("Inventory")
+		if player_pokemon_hurt() and inv.berries.get("razz", 0) > 0:
+			var pkmn = GameManager.party[0]
+			pkmn.hp = mini(pkmn.max_hp, pkmn.hp + int(pkmn.max_hp * 0.3))
+			inv.berries["razz"] -= 1
+			story_dialog.show_dialog("", [
+				"%s has %d/%d HP." % [pkmn.pokemon_name, pkmn.hp, pkmn.max_hp],
+				"Used a Razz Berry to heal!",
+			])
+	npc_interaction_cooldown = 2.0  # 2 second cooldown after battle
 	GameManager.change_state(GameManager.GameState.WORLD)
 
 func player_pokemon_hurt() -> bool:

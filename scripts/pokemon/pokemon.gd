@@ -139,6 +139,14 @@ func _apply_status_move(defender, move: Dictionary) -> Dictionary:
 		"lower_def":
 			defender.def_stat = int(defender.def_stat * 0.8)
 			return {"damage": 0, "effectiveness": 1.0, "text": "%s's defense fell!" % defender.pokemon_name, "move_name": move.get("name", "")}
+		"leech":
+			var drain = maxi(1, defender.max_hp / 8)
+			defender.hp = maxi(0, defender.hp - drain)
+			hp = mini(max_hp, hp + drain)
+			return {"damage": drain, "effectiveness": 1.0, "text": "%s was seeded! Drained %d HP!" % [defender.pokemon_name, drain], "move_name": move.get("name", "")}
+		"fixed_40":
+			defender.hp = maxi(0, defender.hp - 40)
+			return {"damage": 40, "effectiveness": 1.0, "text": "Dealt 40 damage!", "move_name": move.get("name", "")}
 	return {"damage": 0, "effectiveness": 1.0, "text": "But nothing happened!", "move_name": move.get("name", "")}
 
 # Legacy compatibility: calc_damage uses first move by default
