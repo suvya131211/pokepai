@@ -174,7 +174,7 @@ func _process(_delta):
 			inventory_ui.toggle(player.get_node("Inventory"))
 		# NPC interaction (E key)
 		if Input.is_action_just_pressed("interact") and area_manager and npc_interaction_cooldown <= 0:
-			var npc = area_manager.check_npc(player.global_position.x, player.global_position.y)
+			var npc = area_manager.check_npc_facing(player.global_position.x, player.global_position.y, player.direction)
 			if not npc.is_empty():
 				npc_handler.interact_with_npc(npc, area_manager.get_current_area_name())
 				# Check gym leader separately
@@ -221,17 +221,18 @@ func _on_exit_entered(exit_data):
 	if area_manager.current_area:
 		area_w = area_manager.current_area.width
 		area_h = area_manager.current_area.height
-	if sy <= 1: sy = 3
-	elif sy >= area_h - 2: sy = area_h - 4
-	if sx <= 1: sx = 3
-	elif sx >= area_w - 2: sx = area_w - 4
+	if sy <= 1: sy = 5
+	elif sy >= area_h - 2: sy = area_h - 6
+	if sx <= 1: sx = 5
+	elif sx >= area_w - 2: sx = area_w - 6
 	player.global_position = Vector2(sx * 16 + 8, sy * 16 + 8)
-	player.exit_cooldown = 1.5
+	player.exit_cooldown = 3.0
+	npc_interaction_cooldown = 3.0  # prevent NPC auto-trigger on area load
 	# Show area name as a non-blocking notification
 	_show_area_name(target_area)
 
 func _on_npc_dialog(speaker, messages):
-	npc_interaction_cooldown = 1.0  # prevent re-trigger after dialog
+	npc_interaction_cooldown = 2.0  # prevent re-trigger after dialog
 	story_dialog.show_dialog(speaker, messages)
 
 func _on_npc_battle(npc_data):
@@ -263,6 +264,8 @@ func _on_battle_ended(result_str, wild):
 	EventTracker.log_event("BATTLE_RESULT", {"result": result_str, "party_hp": str(GameManager.party.map(func(p): return "%s:%d/%d" % [p.pokemon_name, p.hp, p.max_hp]))})
 	match result_str:
 		"caught":
+			wild.hp = wild.max_hp  # Heal caught Pokemon to full HP
+			wild.status = ""
 			GameManager.party.append(wild)
 			GameManager.add_to_pokedex(wild.id, true)
 			player.follower_pokemon = wild
@@ -313,8 +316,8 @@ func _on_battle_ended(result_str, wild):
 			"You were rushed to the nearest Pokemon Center...",
 			"Your Pokemon have been fully healed!",
 		])
-	else:
-		# Offer healing if player Pokemon is hurt and has berries
+	elif result_str in ["defeated", "trainer_defeated"]:
+		# Only offer berry healing for fights, not catches
 		var inv = player.get_node("Inventory")
 		if player_pokemon_hurt() and inv.berries.get("razz", 0) > 0:
 			var pkmn = GameManager.party[0]

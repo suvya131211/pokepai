@@ -68,6 +68,26 @@ func check_npc(world_x: float, world_y: float) -> Dictionary:
 					return npc
 	return {}
 
+func check_npc_facing(world_x: float, world_y: float, direction: String) -> Dictionary:
+	var tx = int(world_x / 16)
+	var ty = int(world_y / 16)
+	if not current_area:
+		return {}
+	# Only check the tile the player is facing
+	var dx = 0
+	var dy = 0
+	match direction:
+		"up": dy = -1
+		"down": dy = 1
+		"left": dx = -1
+		"right": dx = 1
+	var npc = current_area.get_npc_at(tx + dx, ty + dy)
+	if not npc.is_empty():
+		return npc
+	# Also check current tile
+	npc = current_area.get_npc_at(tx, ty)
+	return npc
+
 var _last_encounter_tile: Vector2i = Vector2i(-999, -999)
 
 func check_encounter(tile_x: int, tile_y: int) -> Dictionary:
