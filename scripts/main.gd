@@ -16,6 +16,7 @@ var WeatherScript = preload("res://scripts/world/weather.gd")
 var MinimapScript = preload("res://scripts/ui/minimap_overlay.gd")
 var SummaryScript = preload("res://scripts/ui/summary_screen.gd")
 var ControlsScript = preload("res://scripts/ui/controls_overlay.gd")
+var ChallengeScript = preload("res://scripts/ui/challenge_menu.gd")
 
 @onready var player = $World/Player
 
@@ -123,6 +124,10 @@ func _ready():
 	summary_screen = SummaryScript.new()
 	summary_screen.set_anchors_preset(Control.PRESET_FULL_RECT)
 	ui_layer.add_child(summary_screen)
+
+	var challenge_menu = ChallengeScript.new()
+	challenge_menu.set_anchors_preset(Control.PRESET_FULL_RECT)
+	ui_layer.add_child(challenge_menu)
 
 	# Title screen
 	var title_layer = CanvasLayer.new()

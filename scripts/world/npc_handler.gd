@@ -58,6 +58,32 @@ func interact_with_npc(npc: Dictionary, area_name: String) -> void:
                 var team = _build_team(npc.get("team", []))
                 npc_battle_start.emit({"name": npc.get("name", "Rocket Grunt"), "team": team, "key": npc_key, "dialog": npc.get("dialog", ["Prepare for trouble!"])})
 
+        "move_tutor":
+            if GameManager.badges_earned >= 3:
+                npc_dialog_start.emit("Move Tutor", [
+                    "I see you have %d badges! Impressive!" % GameManager.badges_earned,
+                    "I taught your lead Pokemon a powerful new move!",
+                ])
+                # Teach a strong move to lead Pokemon
+                if GameManager.party.size() > 0:
+                    var lead = GameManager.party[0]
+                    var new_moves = {
+                        "grass": "Solar Beam", "fire": "Fire Blast", "water": "Hydro Pump",
+                        "electric": "Thunder", "rock": "Rock Slide", "ghost": "Shadow Ball",
+                        "ice": "Blizzard", "psychic": "Psychic", "dark": "Dark Pulse",
+                        "fairy": "Moonblast", "poison": "Sludge Bomb", "flying": "Aerial Ace",
+                        "ground": "Earthquake", "steel": "Iron Tail", "dragon": "Dragon Rage",
+                        "fighting": "Cross Chop", "normal": "Body Slam",
+                    }
+                    var move_name = new_moves.get(lead.type, "Body Slam")
+                    var move_data = MoveData.get_move(move_name)
+                    if not move_data.is_empty() and lead.known_moves.size() < 4:
+                        move_data["name"] = move_name
+                        move_data["current_pp"] = move_data["pp"]
+                        lead.known_moves.append(move_data)
+            else:
+                npc_dialog_start.emit("Move Tutor", ["Come back when you have at least 3 badges!", "I'll teach your Pokemon a powerful move!"])
+
         "gym_leader":
             # Handled separately via gym system
             pass

@@ -233,19 +233,22 @@ func _draw_tile_detail(x: int, y: int, tile: int) -> void:
 			draw_circle(Vector2(tx + 8, ty + 7), 5, Color("#2e7d32"))
 
 		Tile.POKECENTER:
-			# Red cross
-			draw_rect(Rect2(tx + 6, ty + 3, 4, 10), Color("#ef5350"))
-			draw_rect(Rect2(tx + 3, ty + 6, 10, 4), Color("#ef5350"))
+			# Building with red cross and "PC" label
+			draw_rect(Rect2(tx + 1, ty + 1, TILE_SIZE - 2, TILE_SIZE - 2), Color("#c62828"))
+			draw_rect(Rect2(tx + 5, ty + 3, 6, 2), Color.WHITE)
+			draw_rect(Rect2(tx + 7, ty + 1, 2, 6), Color.WHITE)
+			draw_string(ThemeDB.fallback_font, Vector2(tx + 2, ty + 14), "PC", HORIZONTAL_ALIGNMENT_LEFT, 14, 7, Color.WHITE)
 
 		Tile.SHOP:
-			# Blue store icon
-			draw_rect(Rect2(tx + 3, ty + 4, 10, 8), Color("#1565c0"))
-			draw_rect(Rect2(tx + 5, ty + 8, 3, 4), Color("#e0e0e0"))  # door
+			# Blue shop with "MART" label
+			draw_rect(Rect2(tx + 1, ty + 1, TILE_SIZE - 2, TILE_SIZE - 2), Color("#1565c0"))
+			draw_rect(Rect2(tx + 4, ty + 8, 4, 6), Color("#e0e0e0"))  # door
+			draw_string(ThemeDB.fallback_font, Vector2(tx + 1, ty + 7), "MART", HORIZONTAL_ALIGNMENT_LEFT, 14, 6, Color.WHITE)
 
 		Tile.GYM_FLOOR:
-			# Gym badge marker
-			if (x + y) % 3 == 0:
-				draw_circle(Vector2(tx + 8, ty + 8), 3, Color(1, 0.85, 0.2, 0.3))
+			if (x + y) % 4 == 0:
+				draw_circle(Vector2(tx + 8, ty + 8), 4, Color(1, 0.85, 0.2, 0.25))
+				draw_arc(Vector2(tx + 8, ty + 8), 4, 0, TAU, 8, Color(1, 0.85, 0.2, 0.4), 1.0)
 
 		Tile.FLOWER:
 			draw_circle(Vector2(tx + 5, ty + 5), 2, Color("#e91e63"))
@@ -261,8 +264,10 @@ func _draw_tile_detail(x: int, y: int, tile: int) -> void:
 			draw_rect(Rect2(tx + 7, ty + 10, 2, 4), Color("#795548"))
 
 		Tile.DOOR:
-			draw_rect(Rect2(tx + 4, ty + 2, 8, 12), Color("#6d4c41"))
-			draw_circle(Vector2(tx + 10, ty + 8), 1.5, Color("#ffd700"))
+			draw_rect(Rect2(tx + 3, ty + 1, 10, 14), Color("#5d4037"))
+			draw_circle(Vector2(tx + 11, ty + 8), 1.5, Color("#ffd700"))
+			# Door frame
+			draw_rect(Rect2(tx + 2, ty, 12, 2), Color("#795548"))
 
 		Tile.CAVE_FLOOR:
 			if (x * 11 + y * 7) % 5 == 0:
