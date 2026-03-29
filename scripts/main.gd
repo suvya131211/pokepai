@@ -165,6 +165,7 @@ func _show_starter_selection():
 	starter_select.show_selection()
 
 func _on_starter_chosen(species_id: int):
+	SoundManager.play_sfx("catch_success")
 	var starter = PokemonScript.new(species_id, 5)
 	GameManager.party.append(starter)
 	player.follower_pokemon = starter
@@ -256,6 +257,8 @@ func _try_fishing():
 func _on_wild_encounter(encounter_data):
 	if GameManager.state != GameManager.GameState.WORLD:
 		return  # Don't trigger encounters during other states
+	SoundManager.play_encounter_jingle()
+	ScreenTransition.battle_transition()
 	# Check repel
 	var inv = player.get_node("Inventory")
 	if inv.repel_steps > 0:
@@ -290,6 +293,10 @@ func _on_exit_entered(exit_data):
 		])
 		player.exit_cooldown = 3.0
 		return  # Don't transition
+	SoundManager.play_sfx("door")
+	ScreenTransition.transition(Callable(self, "_do_area_transition").bind(target_area, target_x, target_y))
+
+func _do_area_transition(target_area, target_x, target_y):
 	var from_area = area_manager.get_current_area_name()
 	var spawn = area_manager.load_area(target_area, target_x, target_y)
 	if spawn.is_empty():
@@ -569,6 +576,7 @@ func player_pokemon_hurt() -> bool:
 	return false
 
 func _heal_party():
+	SoundManager.play_sfx("heal")
 	EventTracker.log_event("PARTY_HEALED", {})
 	for pkmn in GameManager.party:
 		pkmn.hp = pkmn.max_hp
@@ -669,6 +677,7 @@ func _load_game():
 	story_dialog.show_dialog("", ["Game loaded!"])
 
 func _on_item_found(item_type: String):
+	SoundManager.play_sfx("item")
 	if item_type == "ultraball":
 		var inv = player.get_node("Inventory")
 		inv.balls["ultraball"] = inv.balls.get("ultraball", 0) + 1

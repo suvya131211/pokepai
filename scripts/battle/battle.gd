@@ -246,6 +246,7 @@ func _process(delta):
                         result = "caught"
                         message = "Gotcha! %s was caught!" % wild_pokemon.pokemon_name
                         message_timer = 2.5
+                        SoundManager.play_sfx("catch_success")
                     else:
                         # Broke free
                         phase = Phase.MENU
@@ -253,6 +254,7 @@ func _process(delta):
                 else:
                     shake_timer = 0.55
                     message = "...".repeat(shake_count + 1)
+                    SoundManager.play_sfx("catch_shake")
 
         Phase.END:
             if message_timer > 0:
@@ -342,6 +344,7 @@ func _input(event):
                 message = "What will %s do?" % (player_pokemon.pokemon_name if player_pokemon else "you")
 
 func _handle_menu_action(action: String):
+    SoundManager.play_sfx("click")
     print("[BATTLE] Menu action: %s, player_pokemon=%s, moves=%d" % [
         action,
         player_pokemon.pokemon_name if player_pokemon else "NULL",
@@ -517,6 +520,10 @@ func _player_attack_move(move_index: int):
             dmg_data["text"] = (dmg_data["text"] + " Sturdy kept it standing!").strip_edges()
         wild_pokemon.hp = maxi(0, wild_pokemon.hp - dmg_data["damage"])
         EventTracker.log_event("DAMAGE_DEALT", {"target": "wild", "damage": dmg_data["damage"], "remaining_hp": wild_pokemon.hp, "move": dmg_data.get("move_name", ""), "effectiveness": dmg_data.get("text", "")})
+        if dmg_data.get("critical", false):
+            SoundManager.play_sfx("critical")
+        elif dmg_data["damage"] > 0:
+            SoundManager.play_sfx("damage")
         wild_shake = 1.0
         wild_flash = 1.0
         # Trigger move animation
@@ -536,6 +543,10 @@ func _player_attack_move(move_index: int):
         dmg_data = player_pokemon.calc_damage(wild_pokemon)
         wild_pokemon.hp = maxi(0, wild_pokemon.hp - dmg_data["damage"])
         EventTracker.log_event("DAMAGE_DEALT", {"target": "wild", "damage": dmg_data["damage"], "remaining_hp": wild_pokemon.hp, "move": dmg_data.get("move_name", ""), "effectiveness": dmg_data.get("text", "")})
+        if dmg_data.get("critical", false):
+            SoundManager.play_sfx("critical")
+        elif dmg_data["damage"] > 0:
+            SoundManager.play_sfx("damage")
         wild_shake = 1.0
         wild_flash = 1.0
         # Trigger move animation
@@ -585,6 +596,8 @@ func _wild_attack():
         dmg_data["damage"] = int(dmg_data["damage"] * 0.5)
     player_pokemon.hp = maxi(0, player_pokemon.hp - dmg_data["damage"])
     EventTracker.log_event("DAMAGE_DEALT", {"target": "player", "damage": dmg_data["damage"], "remaining_hp": player_pokemon.hp, "move": dmg_data.get("move_name", "")})
+    if dmg_data["damage"] > 0:
+        SoundManager.play_sfx("damage")
     player_shake = 1.0
     player_flash = 1.0
     var mname = dmg_data.get("move_name", "")
@@ -652,6 +665,7 @@ func _on_wild_fainted():
     if player_pokemon:
         player_pokemon.gain_evs(wild_pokemon.species)
     EventTracker.log_event("WILD_FAINTED", {"name": wild_pokemon.pokemon_name, "xp_gained": xp_gain, "leveled_up": leveled_up})
+    SoundManager.play_victory_jingle()
 
     if is_trainer_battle:
         trainer_current += 1
