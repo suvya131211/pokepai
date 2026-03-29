@@ -246,7 +246,8 @@ func _process(_delta):
 		if npc_interaction_cooldown <= 0:
 			var los_trainer = area_manager.check_trainer_los(player.global_position.x, player.global_position.y)
 			if not los_trainer.is_empty():
-				var npc_key = "%s_%s_%d_%d" % [area_manager.get_current_area_name(), los_trainer.get("name", ""), los_trainer.get("x", 0), los_trainer.get("y", 0)]
+				# Use same key format as npc_handler: "area_name:npc_name"
+				var npc_key = area_manager.get_current_area_name() + ":" + los_trainer.get("name", "")
 				if not npc_handler.is_defeated(npc_key):
 					npc_interaction_cooldown = 5.0
 					npc_handler.interact_with_npc(los_trainer, area_manager.get_current_area_name())
@@ -273,7 +274,7 @@ func _on_wild_encounter(encounter_data):
 	if inv.repel_steps > 0:
 		inv.repel_steps -= 1
 		if inv.repel_steps == 0:
-			story_dialog.show_dialog("", ["Repel wore off!"])
+			_show_area_name("Repel wore off!")
 		return
 	var species_id = encounter_data.get("species_id", 1)
 	var level = randi_range(encounter_data.get("min_level", 2), encounter_data.get("max_level", 5))
@@ -700,13 +701,14 @@ func _on_item_found(item_type: String):
 	if item_type == "ultraball":
 		var inv = player.get_node("Inventory")
 		inv.balls["ultraball"] = inv.balls.get("ultraball", 0) + 1
-		story_dialog.show_dialog("", ["Found a hidden Ultra Ball!"])
+		_show_area_name("Found Ultra Ball!")
 	elif item_type in ["razz", "nanab", "pinap"]:
-		# Auto-heal lead Pokemon by 10 HP when finding a berry
 		if GameManager.party.size() > 0:
 			var lead = GameManager.party[0]
 			if lead.hp < lead.max_hp:
 				lead.hp = mini(lead.max_hp, lead.hp + 10)
-				story_dialog.show_dialog("", ["Found a hidden %s berry! %s healed 10 HP! (%d/%d)" % [item_type.capitalize(), lead.pokemon_name, lead.hp, lead.max_hp]])
+				_show_area_name("Berry: %s +10 HP!" % lead.pokemon_name)
 			else:
-				story_dialog.show_dialog("", ["Found a hidden %s berry! Saved for later." % item_type.capitalize()])
+				_show_area_name("Found %s berry!" % item_type.capitalize())
+	else:
+		_show_area_name("Found %s!" % item_type.capitalize())
