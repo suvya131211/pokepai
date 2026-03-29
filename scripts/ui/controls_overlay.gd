@@ -53,6 +53,8 @@ func _draw():
 		["P", "Pokedex"],
 		["I", "Inventory"],
 		["C", "Pokemon Summary"],
+		["V", "Evolution Tracker"],
+		["J", "Challenges / Stats"],
 		["M", "Map (expand/collapse)"],
 		["T", "Fly (fast travel)"],
 		["H", "This help screen"],

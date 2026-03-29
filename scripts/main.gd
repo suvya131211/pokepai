@@ -17,6 +17,7 @@ var MinimapScript = preload("res://scripts/ui/minimap_overlay.gd")
 var SummaryScript = preload("res://scripts/ui/summary_screen.gd")
 var ControlsScript = preload("res://scripts/ui/controls_overlay.gd")
 var ChallengeScript = preload("res://scripts/ui/challenge_menu.gd")
+var EvolutionScript = preload("res://scripts/ui/evolution_tracker.gd")
 
 @onready var player = $World/Player
 
@@ -128,6 +129,11 @@ func _ready():
 	var challenge_menu = ChallengeScript.new()
 	challenge_menu.set_anchors_preset(Control.PRESET_FULL_RECT)
 	ui_layer.add_child(challenge_menu)
+
+	# Evolution tracker (V key)
+	var evo_tracker = EvolutionScript.new()
+	evo_tracker.set_anchors_preset(Control.PRESET_FULL_RECT)
+	ui_layer.add_child(evo_tracker)
 
 	# Title screen
 	var title_layer = CanvasLayer.new()

@@ -43,7 +43,7 @@ func _draw_mini_map(vp: Vector2):
 	var map_h = 110.0
 	var mx = vp.x - map_w - 12
 	var my = 8.0
-	var panel_h = map_h + 60  # extra space for text below map
+	var panel_h = map_h + 72  # extra space for text below map (4 lines)
 
 	# Solid dark panel background with border
 	draw_rect(Rect2(mx - 6, my - 6, map_w + 12, panel_h + 12), Color(0.03, 0.05, 0.1, 0.92))
@@ -105,23 +105,17 @@ func _draw_mini_map(vp: Vector2):
 		var pulse = sin(Time.get_ticks_msec() * 0.005) * 0.3 + 0.7
 		draw_circle(Vector2(px, py), 4, Color(1, 1, 1, pulse))
 
-	# Text below map — clear, readable, well-spaced
-	var text_y = my + map_h + 8
-	# Area name (large, bright)
-	draw_string(ThemeDB.fallback_font, Vector2(mx + 2, text_y + 12), area.area_name, HORIZONTAL_ALIGNMENT_LEFT, map_w, 13, Color("#4fc3f7"))
-
-	# Biome + badges on same line
+	# Text below map — single clean column, no overlap
+	var ty = my + map_h + 6
+	draw_string(ThemeDB.fallback_font, Vector2(mx + 2, ty + 12), area.area_name, HORIZONTAL_ALIGNMENT_LEFT, map_w - 4, 13, Color("#4fc3f7"))
+	ty += 18
 	var biome_label = _get_biome_label(area)
-	var badge_text = "Badges: %d/8" % GameManager.badges_earned
-	draw_string(ThemeDB.fallback_font, Vector2(mx + 2, text_y + 28), biome_label, HORIZONTAL_ALIGNMENT_LEFT, map_w * 0.5, 11, Color("#aed581"))
-	draw_string(ThemeDB.fallback_font, Vector2(mx + map_w * 0.55, text_y + 28), badge_text, HORIZONTAL_ALIGNMENT_LEFT, map_w * 0.45, 11, Color("#ffd700"))
-
-	# Controls hint
-	draw_string(ThemeDB.fallback_font, Vector2(mx + 2, text_y + 44), "[M] Map  [H] Help  [T] Fly", HORIZONTAL_ALIGNMENT_LEFT, map_w, 10, Color("#777"))
-
-	# Badge count display
-	var badge_count = GameManager.badges_earned
-	draw_string(ThemeDB.fallback_font, Vector2(mx, my + map_h + 50), "Badges: %d/8" % badge_count, HORIZONTAL_ALIGNMENT_LEFT, map_w, 10, Color("#ffd700"))
+	if biome_label != "":
+		draw_string(ThemeDB.fallback_font, Vector2(mx + 2, ty + 12), biome_label, HORIZONTAL_ALIGNMENT_LEFT, map_w - 4, 10, Color("#aed581"))
+		ty += 14
+	draw_string(ThemeDB.fallback_font, Vector2(mx + 2, ty + 12), "Badges: %d/8" % GameManager.badges_earned, HORIZONTAL_ALIGNMENT_LEFT, map_w - 4, 10, Color("#ffd700"))
+	ty += 14
+	draw_string(ThemeDB.fallback_font, Vector2(mx + 2, ty + 12), "[M]Map [H]Help [T]Fly [J]Stats", HORIZONTAL_ALIGNMENT_LEFT, map_w - 4, 9, Color("#666"))
 
 func _draw_full_map(vp: Vector2):
 	# Large centered map overlay
