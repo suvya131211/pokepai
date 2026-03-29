@@ -191,6 +191,7 @@ func _start_adventure():
 	var spawn = area_manager.load_area("Pallet Town")
 	player.global_position = Vector2(spawn["x"] * 16 + 8, spawn["y"] * 16 + 8)
 	GameManager.change_state(GameManager.GameState.WORLD)
+	SoundManager.play_music("overworld")
 	_trigger_area_story("Pallet Town")
 
 func _process(_delta):
@@ -276,6 +277,7 @@ func _on_wild_encounter(encounter_data):
 		if inv.repel_steps == 0:
 			_show_area_name("Repel wore off!")
 		return
+	SoundManager.play_music("battle")
 	var species_id = encounter_data.get("species_id", 1)
 	var level = randi_range(encounter_data.get("min_level", 2), encounter_data.get("max_level", 5))
 	var wild = PokemonScript.new(species_id, level)
@@ -364,6 +366,14 @@ func _do_area_transition(target_area, target_x, target_y):
 	SaveManager.save_game()
 	# Show area name as a non-blocking notification
 	_show_area_name(target_area)
+	# Play area-appropriate music
+	if area_manager.current_area:
+		match area_manager.current_area.area_type:
+			"town": SoundManager.play_music("town")
+			"route": SoundManager.play_music("overworld")
+			"cave": SoundManager.play_music("cave")
+			"league": SoundManager.play_music("gym")
+			_: SoundManager.play_music("overworld")
 	# Trigger story events for new area
 	_trigger_area_story(target_area)
 
@@ -459,6 +469,7 @@ func _on_npc_battle(npc_data):
 func _begin_npc_fight():
 	if not current_npc_battle_data:
 		return
+	SoundManager.play_music("battle")
 	GameManager.change_state(GameManager.GameState.BATTLE)
 	var team = current_npc_battle_data.get("team", [])
 	if team.size() > 0:
@@ -474,6 +485,7 @@ func _start_gym_battle(gym_data):
 func _begin_gym_fight(gym_data):
 	var team = npc_handler._build_team(gym_data.get("team", []))
 	current_npc_battle_data = {"name": gym_data.get("name", ""), "key": "", "is_gym": true, "badge": gym_data.get("badge", ""), "win_dialog": gym_data.get("win_dialog", [])}
+	SoundManager.play_music("gym")
 	GameManager.change_state(GameManager.GameState.BATTLE)
 	battle_scene.set_inventory(player.get_node("Inventory"))
 	if battle_scene.has_method("start_trainer_battle"):
@@ -571,6 +583,14 @@ func _on_battle_ended(result_str, wild):
 				"Used a Razz Berry to heal!",
 			])
 	npc_interaction_cooldown = 2.0  # 2 second cooldown after battle
+	# Restore area music
+	if area_manager and area_manager.current_area:
+		match area_manager.current_area.area_type:
+			"town": SoundManager.play_music("town")
+			"cave": SoundManager.play_music("cave")
+			_: SoundManager.play_music("overworld")
+	else:
+		SoundManager.play_music("overworld")
 	GameManager.change_state(GameManager.GameState.WORLD)
 
 func _on_shop():

@@ -66,6 +66,10 @@ var move_particles: Array = []
 # Wild HP at start of each turn (for red-flash transition)
 var selected_move_index: int = -1
 
+# Screen shake
+var screen_shake: float = 0.0
+var shake_offset: Vector2 = Vector2.ZERO
+
 # ─── Signal ───────────────────────────────────────────────────────────────────
 signal battle_ended(result_str: String, wild)
 
@@ -181,6 +185,13 @@ func _process(delta):
     player_shake = move_toward(player_shake, 0.0, delta * 12.0)
     wild_flash = move_toward(wild_flash, 0.0, delta * 3.0)
     player_flash = move_toward(player_flash, 0.0, delta * 3.0)
+
+    # Screen shake decay
+    screen_shake = move_toward(screen_shake, 0.0, delta * 8.0)
+    if screen_shake > 0:
+        shake_offset = Vector2(randf_range(-1, 1), randf_range(-1, 1)) * screen_shake * 5.0
+    else:
+        shake_offset = Vector2.ZERO
 
     # Move animation timer
     if move_anim_timer > 0:
@@ -526,6 +537,8 @@ func _player_attack_move(move_index: int):
             SoundManager.play_sfx("damage")
         wild_shake = 1.0
         wild_flash = 1.0
+        if dmg_data.get("effectiveness", 1.0) > 1.0:
+            screen_shake = 1.0  # super effective shake
         # Trigger move animation
         move_anim_name = move.get("name", "Attack")
         move_anim_type = move.get("type", "normal")
@@ -881,6 +894,10 @@ func _draw():
     # Player platform (bottom-left)
     _draw_grass_platform(Vector2(w * 0.25, h * 0.68), w * 0.35, 20)
 
+    # Screen shake offset
+    var sx_off = shake_offset.x
+    var sy_off = shake_offset.y
+
     # === ENEMY POKEMON (top-right, on platform) ===
     var enemy_x = w * 0.7
     var enemy_y = h * 0.28
@@ -889,16 +906,19 @@ func _draw():
         var wobble = 0.0
         if phase == Phase.CATCH_SHAKE and shake_count > 0:
             wobble = sin(Time.get_ticks_msec() * 0.04) * 8.0
-        var spr_size = w * 0.18
+        # Idle animation for wild Pokemon
+        var idle_scale = 1.0 + sin(Time.get_ticks_msec() * 0.003) * 0.02
+        var idle_bob = sin(Time.get_ticks_msec() * 0.002) * 2.0
+        var spr_size = w * 0.18 * idle_scale
         if wild_sprite:
             draw_texture_rect(wild_sprite,
-                Rect2(enemy_x - spr_size/2 + shake_x + wobble, enemy_y - spr_size + 10, spr_size, spr_size), false)
+                Rect2(enemy_x - spr_size/2 + shake_x + wobble + sx_off, enemy_y - spr_size + 10 + idle_bob + sy_off, spr_size, spr_size), false)
         else:
-            draw_circle(Vector2(enemy_x + shake_x + wobble, enemy_y - spr_size * 0.3), spr_size * 0.4, wild_pokemon.color)
-            draw_arc(Vector2(enemy_x + shake_x + wobble, enemy_y - spr_size * 0.3), spr_size * 0.4, 0, TAU, 16, Color.WHITE, 2.0)
+            draw_circle(Vector2(enemy_x + shake_x + wobble + sx_off, enemy_y - spr_size * 0.3 + idle_bob + sy_off), spr_size * 0.4, wild_pokemon.color)
+            draw_arc(Vector2(enemy_x + shake_x + wobble + sx_off, enemy_y - spr_size * 0.3 + idle_bob + sy_off), spr_size * 0.4, 0, TAU, 16, Color.WHITE, 2.0)
         # Flash overlay
         if wild_flash > 0:
-            draw_circle(Vector2(enemy_x + shake_x, enemy_y - spr_size * 0.3), spr_size * 0.45, Color(1, 1, 1, wild_flash * 0.4))
+            draw_circle(Vector2(enemy_x + shake_x + sx_off, enemy_y - spr_size * 0.3 + sy_off), spr_size * 0.45, Color(1, 1, 1, wild_flash * 0.4))
         # Shiny indicator
         if wild_pokemon.is_shiny:
             draw_string(ThemeDB.fallback_font, Vector2(enemy_x - 10, enemy_y - 50), "★", HORIZONTAL_ALIGNMENT_LEFT, 20, 14, Color("#ffd700"))
@@ -908,15 +928,18 @@ func _draw():
     var player_y = h * 0.55
     if player_pokemon:
         var shake_x = sin(player_shake * 20.0) * player_shake * 12.0
-        var spr_size = w * 0.22
+        # Idle animation for player Pokemon (offset phase by 1.5)
+        var p_idle_scale = 1.0 + sin(Time.get_ticks_msec() * 0.003 + 1.5) * 0.02
+        var p_idle_bob = sin(Time.get_ticks_msec() * 0.002 + 1.5) * 1.5
+        var spr_size = w * 0.22 * p_idle_scale
         if player_sprite:
             draw_texture_rect(player_sprite,
-                Rect2(player_x - spr_size/2 + shake_x, player_y - spr_size + 15, spr_size, spr_size), false)
+                Rect2(player_x - spr_size/2 + shake_x + sx_off, player_y - spr_size + 15 + p_idle_bob + sy_off, spr_size, spr_size), false)
         else:
-            draw_circle(Vector2(player_x + shake_x, player_y - spr_size * 0.25), spr_size * 0.45, player_pokemon.color)
-            draw_arc(Vector2(player_x + shake_x, player_y - spr_size * 0.25), spr_size * 0.45, 0, TAU, 16, Color.WHITE, 2.0)
+            draw_circle(Vector2(player_x + shake_x + sx_off, player_y - spr_size * 0.25 + p_idle_bob + sy_off), spr_size * 0.45, player_pokemon.color)
+            draw_arc(Vector2(player_x + shake_x + sx_off, player_y - spr_size * 0.25 + p_idle_bob + sy_off), spr_size * 0.45, 0, TAU, 16, Color.WHITE, 2.0)
         if player_flash > 0:
-            draw_circle(Vector2(player_x + shake_x, player_y - spr_size * 0.25), spr_size * 0.5, Color(1, 0.3, 0.3, player_flash * 0.4))
+            draw_circle(Vector2(player_x + shake_x + sx_off, player_y - spr_size * 0.25 + sy_off), spr_size * 0.5, Color(1, 0.3, 0.3, player_flash * 0.4))
         # Shiny indicator
         if player_pokemon.is_shiny:
             draw_string(ThemeDB.fallback_font, Vector2(player_x - 10, player_y - 40), "★", HORIZONTAL_ALIGNMENT_LEFT, 20, 14, Color("#ffd700"))
