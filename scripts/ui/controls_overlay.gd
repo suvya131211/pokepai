@@ -60,10 +60,12 @@ func _draw():
 		["H", "This help screen"],
 	])
 
-	y += 10 * line_h + 20
-	_draw_section(col1_x, y, "SAVE / LOAD", [
+	y += 12 * line_h + 20
+	_draw_section(col1_x, y, "SAVE / LOAD / AUDIO", [
 		["F5", "Save game"],
 		["F9", "Load game"],
+		["F1", "Toggle music %s" % ("ON" if SoundManager.music_enabled else "OFF")],
+		["F2", "Toggle SFX %s" % ("ON" if SoundManager.sfx_enabled else "OFF")],
 	])
 
 	y += 3 * line_h + 20

@@ -686,6 +686,12 @@ func _unhandled_input(event):
 			_save_game()
 		elif event.keycode == KEY_F9:
 			_load_game()
+		elif event.keycode == KEY_F1:
+			SoundManager.toggle_music()
+			_show_area_name("Music: %s" % ("ON" if SoundManager.music_enabled else "OFF"))
+		elif event.keycode == KEY_F2:
+			SoundManager.toggle_sfx()
+			_show_area_name("SFX: %s" % ("ON" if SoundManager.sfx_enabled else "OFF"))
 		elif event.keycode == KEY_C and GameManager.state == GameManager.GameState.WORLD:
 			if GameManager.party.size() > 0 and summary_screen:
 				summary_screen.show_summary(GameManager.party[0], 0)
