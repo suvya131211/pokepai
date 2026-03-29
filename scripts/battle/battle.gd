@@ -963,6 +963,9 @@ func _draw():
             draw_string(ThemeDB.fallback_font, Vector2(vp_w * 0.31 + 45, slot_y + 28), label, HORIZONTAL_ALIGNMENT_LEFT, vp_w * 0.35, 12, Color.WHITE if not is_fainted else Color("#666"))
         draw_string(ThemeDB.fallback_font, Vector2(vp_w * 0.35, 80 + party_ref.size() * 50 + 20), "Press ESC to cancel", HORIZONTAL_ALIGNMENT_LEFT, vp_w * 0.3, 11, Color("#888"))
 
+    # Help hint
+    draw_string(ThemeDB.fallback_font, Vector2(w - 80, 20), "[H] Help", HORIZONTAL_ALIGNMENT_LEFT, 70, 10, Color("#555"))
+
 func _draw_grass_platform(center: Vector2, width: float, height: float):
     # Draw a green grass ellipse (like LeafGreen)
     var points: PackedVector2Array = []

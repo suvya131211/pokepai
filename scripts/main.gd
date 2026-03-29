@@ -15,6 +15,7 @@ var DayNightScript = preload("res://scripts/world/day_night.gd")
 var WeatherScript = preload("res://scripts/world/weather.gd")
 var MinimapScript = preload("res://scripts/ui/minimap_overlay.gd")
 var SummaryScript = preload("res://scripts/ui/summary_screen.gd")
+var ControlsScript = preload("res://scripts/ui/controls_overlay.gd")
 
 @onready var player = $World/Player
 
@@ -131,6 +132,14 @@ func _ready():
 	title_layer.add_child(title_screen)
 	title_screen.set_anchors_preset(Control.PRESET_FULL_RECT)
 	title_screen.start_game.connect(_on_title_done)
+
+	# Controls overlay (press H) — highest layer, always accessible
+	var controls_layer = CanvasLayer.new()
+	controls_layer.layer = 50  # above title screen (30), battle (20), UI (25)
+	add_child(controls_layer)
+	var controls = ControlsScript.new()
+	controls.set_anchors_preset(Control.PRESET_FULL_RECT)
+	controls_layer.add_child(controls)
 
 	# Player signals
 	player.encountered_pokemon.connect(_on_wild_encounter)

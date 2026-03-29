@@ -105,6 +105,7 @@ func _draw_mini_map(vp: Vector2):
 
 	# Legend hint
 	draw_string(ThemeDB.fallback_font, Vector2(mx, my + map_h + 36), "[M] expand", HORIZONTAL_ALIGNMENT_LEFT, map_w, 9, Color("#666"))
+	draw_string(ThemeDB.fallback_font, Vector2(mx, my + map_h + 48), "[H] Controls", HORIZONTAL_ALIGNMENT_LEFT, map_w, 9, Color("#555"))
 
 	# Badge count display
 	var badge_count = GameManager.badges_earned

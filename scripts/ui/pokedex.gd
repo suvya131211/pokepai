@@ -61,3 +61,4 @@ func _draw() -> void:
 		draw_string(ThemeDB.fallback_font, Vector2(x + 4, y + CELL_H - 16), s["name"] if is_caught else "???", HORIZONTAL_ALIGNMENT_LEFT, CELL_W - 10, 10, Color("#e0e0e0") if is_caught else Color("#444"))
 
 	draw_string(ThemeDB.fallback_font, Vector2(24, h - 16), "Press P or ESC to close", HORIZONTAL_ALIGNMENT_LEFT, w, 12, Color("#888"))
+	draw_string(ThemeDB.fallback_font, Vector2(w - 80, 20), "[H] Help", HORIZONTAL_ALIGNMENT_LEFT, 70, 10, Color("#555"))

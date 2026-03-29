@@ -141,3 +141,4 @@ func _draw() -> void:
 		draw_string(ThemeDB.fallback_font, Vector2(w / 2 - 100, h - 40), _heal_message, HORIZONTAL_ALIGNMENT_CENTER, 200, 13, Color("#4caf50"))
 
 	draw_string(ThemeDB.fallback_font, Vector2(24, h - 16), "Press I or ESC to close | R=Repel | E=Escape Rope", HORIZONTAL_ALIGNMENT_LEFT, w, 12, Color("#888"))
+	draw_string(ThemeDB.fallback_font, Vector2(w - 80, 20), "[H] Help", HORIZONTAL_ALIGNMENT_LEFT, 70, 10, Color("#555"))

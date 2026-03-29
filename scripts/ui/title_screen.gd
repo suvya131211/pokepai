@@ -76,3 +76,4 @@ func _draw():
     draw_string(ThemeDB.fallback_font, Vector2(cx - 80, h * 0.85),
         "Press any key to start", HORIZONTAL_ALIGNMENT_CENTER, 160, 14,
         Color(1, 1, 1, press_alpha))
+    draw_string(ThemeDB.fallback_font, Vector2(cx - 40, h * 0.92), "[H] Controls", HORIZONTAL_ALIGNMENT_CENTER, 80, 11, Color(1, 1, 1, press_alpha * 0.5))
