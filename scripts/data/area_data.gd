@@ -270,11 +270,13 @@ func _route_1() -> Dictionary:
 		],
 		"encounters": [
 			{"species_id": 11, "min_level": 2, "max_level": 6, "weight": 30},   # Pidgey
-			{"species_id": 8, "min_level": 2, "max_level": 5, "weight": 25},    # Nidoran
-			{"species_id": 10, "min_level": 3, "max_level": 5, "weight": 20},   # Sandshrew
+			{"species_id": 8, "min_level": 2, "max_level": 6, "weight": 25},    # Nidoran
+			{"species_id": 10, "min_level": 3, "max_level": 6, "weight": 20},   # Sandshrew
 			{"species_id": 1, "min_level": 3, "max_level": 6, "weight": 10},    # Bulbasaur (rare)
 			{"species_id": 15, "min_level": 4, "max_level": 6, "weight": 10},   # Clefairy
-			{"species_id": 12, "min_level": 4, "max_level": 7, "weight": 5},    # Murkrow (rare)
+			{"species_id": 12, "min_level": 4, "max_level": 6, "weight": 5},    # Murkrow (rare)
+			{"species_id": 27, "min_level": 2, "max_level": 4, "weight": 15},   # Caterpie
+			{"species_id": 29, "min_level": 2, "max_level": 5, "weight": 15},   # Rattata
 		],
 		"hidden_items": [
 			{"x": 10, "y": 18, "type": "ultraball", "found": false},
@@ -350,7 +352,7 @@ func _pewter_city() -> Dictionary:
 			"x": 7, "y": 6, "name": "Brock", "type": "gym_leader",
 			"specialty": "rock", "badge": "Boulder Badge",
 			"dialog": ["I'm Brock, the Pewter City Gym Leader!", "My rock-hard Pokemon will crush you!"],
-			"team": [{"id": 5, "level": 8}, {"id": 10, "level": 9}, {"id": 5, "level": 10}],
+			"team": [{"id": 5, "level": 9}, {"id": 10, "level": 10}, {"id": 5, "level": 12}],
 			"win_dialog": ["You beat me! Take the Boulder Badge!", "You've earned my respect."],
 		},
 		"pokecenter": true, "shop": true,
@@ -399,18 +401,18 @@ func _mt_moon() -> Dictionary:
 			{"x": 39, "y": 18, "target_area": "Cerulean City", "target_x": 1, "target_y": 15},
 		],
 		"npcs": [
-			{"x": 12, "y": 8, "name": "Rocket Grunt", "type": "rocket", "dialog": ["Hand over your Pokemon!", "Team Rocket will rule!"], "team": [{"id": 8, "level": 9}, {"id": 12, "level": 10}]},
-			{"x": 28, "y": 22, "name": "Rocket Grunt", "type": "rocket", "dialog": ["You'll never stop Team Rocket!"], "team": [{"id": 6, "level": 11}]},
-			{"x": 20, "y": 30, "name": "Rocket Grunt", "type": "rocket", "dialog": ["Stay away from our operations!"], "team": [{"id": 5, "level": 10}, {"id": 6, "level": 11}]},
+			{"x": 12, "y": 8, "name": "Rocket Grunt", "type": "rocket", "dialog": ["Hand over your Pokemon!", "Team Rocket will rule!"], "team": [{"id": 8, "level": 8}, {"id": 12, "level": 9}]},
+			{"x": 28, "y": 22, "name": "Rocket Grunt", "type": "rocket", "dialog": ["You'll never stop Team Rocket!"], "team": [{"id": 6, "level": 10}]},
+			{"x": 20, "y": 30, "name": "Rocket Grunt", "type": "rocket", "dialog": ["Stay away from our operations!"], "team": [{"id": 5, "level": 9}, {"id": 6, "level": 11}]},
 			{"x": 2, "y": 16, "name": "Sign", "type": "npc", "dialog": ["← Pewter City (West)", "→ Cerulean City (East)"]},
 			{"x": 5, "y": 28, "name": "Geologist", "type": "npc", "dialog": ["Careful! Lava flows deeper in the cave.", "The heat attracts Fire-type Pokemon..."]},
 		],
 		"encounters": [
-			{"species_id": 5, "min_level": 8, "max_level": 12, "weight": 25},   # Geodude
-			{"species_id": 6, "min_level": 8, "max_level": 11, "weight": 20},   # Gastly
+			{"species_id": 5, "min_level": 7, "max_level": 12, "weight": 25},   # Geodude
+			{"species_id": 6, "min_level": 7, "max_level": 11, "weight": 20},   # Gastly
 			{"species_id": 15, "min_level": 8, "max_level": 11, "weight": 10},  # Clefairy
-			{"species_id": 9, "min_level": 9, "max_level": 12, "weight": 10},   # Abra
-			{"species_id": 13, "min_level": 10, "max_level": 13, "weight": 8},  # Aron
+			{"species_id": 9, "min_level": 8, "max_level": 12, "weight": 10},   # Abra
+			{"species_id": 13, "min_level": 9, "max_level": 12, "weight": 8},   # Aron
 			{"species_id": 2, "min_level": 8, "max_level": 12, "weight": 7},    # Charmander (lava area!)
 		],
 		"hidden_items": [
@@ -498,11 +500,18 @@ func _cerulean_city() -> Dictionary:
 			"x": 7, "y": 7, "name": "Misty", "type": "gym_leader",
 			"specialty": "water", "badge": "Cascade Badge",
 			"dialog": ["I'm Misty! My water Pokemon are unstoppable!"],
-			"team": [{"id": 3, "level": 16}, {"id": 17, "level": 18}, {"id": 3, "level": 17}],
+			"team": [{"id": 3, "level": 14}, {"id": 17, "level": 16}, {"id": 3, "level": 18}],
 			"win_dialog": ["You beat my water Pokemon! Take the Cascade Badge!"],
 		},
 		"pokecenter": true, "shop": false,
-		"encounters": [],
+		"encounters": [
+			{"species_id": 3, "min_level": 10, "max_level": 14, "weight": 30},  # Squirtle (lake)
+			{"species_id": 17, "min_level": 12, "max_level": 15, "weight": 10}, # Gyarados (rare)
+			{"species_id": 8, "min_level": 10, "max_level": 13, "weight": 20},  # Nidoran
+			{"species_id": 9, "min_level": 11, "max_level": 15, "weight": 15},  # Abra
+			{"species_id": 15, "min_level": 10, "max_level": 14, "weight": 15}, # Clefairy
+			{"species_id": 1, "min_level": 11, "max_level": 15, "weight": 10},  # Bulbasaur
+		],
 	})
 
 func _route_3() -> Dictionary:
@@ -547,20 +556,20 @@ func _route_3() -> Dictionary:
 			{"x": 49, "y": 21, "target_area": "Vermilion City", "target_x": 1, "target_y": 15},
 		],
 		"npcs": [
-			{"x": 15, "y": 8, "name": "Hiker Mike", "type": "trainer", "dialog": ["These icy mountains are tough!", "My Pokemon love the cold!"], "team": [{"id": 5, "level": 14}, {"id": 13, "level": 15}]},
-			{"x": 35, "y": 28, "name": "Skier Amy", "type": "trainer", "dialog": ["Snow routes are my specialty!", "Battle me!"], "team": [{"id": 15, "level": 14}, {"id": 7, "level": 15}]},
-			{"x": 24, "y": 33, "name": "Picnicker Dana", "type": "trainer", "dialog": ["Even in snow, I love Pokemon!"], "team": [{"id": 15, "level": 14}, {"id": 4, "level": 14}]},
+			{"x": 15, "y": 8, "name": "Hiker Mike", "type": "trainer", "dialog": ["These icy mountains are tough!", "My Pokemon love the cold!"], "team": [{"id": 5, "level": 15}, {"id": 13, "level": 16}]},
+			{"x": 35, "y": 28, "name": "Skier Amy", "type": "trainer", "dialog": ["Snow routes are my specialty!", "Battle me!"], "team": [{"id": 15, "level": 15}, {"id": 7, "level": 16}]},
+			{"x": 24, "y": 33, "name": "Picnicker Dana", "type": "trainer", "dialog": ["Even in snow, I love Pokemon!"], "team": [{"id": 15, "level": 14}, {"id": 4, "level": 15}]},
 			{"x": 1, "y": 19, "name": "Sign", "type": "npc", "dialog": ["← Cerulean City (West)", "→ Vermilion City (East)", "BLIZZARD WARNING: Ice-type Pokemon active!"]},
 			{"x": 47, "y": 19, "name": "Sign", "type": "npc", "dialog": ["→ Vermilion City (East)", "← Cerulean City (West)"]},
 			{"x": 22, "y": 15, "name": "Researcher", "type": "npc", "dialog": ["The frozen lake has rare Ice-type Pokemon!", "I've spotted a Dratini in the deep snow..."]},
 		],
 		"encounters": [
-			{"species_id": 7, "min_level": 12, "max_level": 16, "weight": 30},  # Sneasel
-			{"species_id": 15, "min_level": 12, "max_level": 15, "weight": 20}, # Clefairy
-			{"species_id": 5, "min_level": 13, "max_level": 16, "weight": 15},  # Geodude (mountain)
-			{"species_id": 11, "min_level": 12, "max_level": 15, "weight": 15}, # Pidgey
-			{"species_id": 13, "min_level": 14, "max_level": 17, "weight": 10}, # Aron (rare)
-			{"species_id": 14, "min_level": 15, "max_level": 18, "weight": 5},  # Dratini (very rare!)
+			{"species_id": 7, "min_level": 14, "max_level": 18, "weight": 30},  # Sneasel
+			{"species_id": 15, "min_level": 14, "max_level": 17, "weight": 20}, # Clefairy
+			{"species_id": 5, "min_level": 15, "max_level": 18, "weight": 15},  # Geodude (mountain)
+			{"species_id": 11, "min_level": 14, "max_level": 18, "weight": 15}, # Pidgey
+			{"species_id": 13, "min_level": 16, "max_level": 20, "weight": 10}, # Aron (rare)
+			{"species_id": 14, "min_level": 17, "max_level": 20, "weight": 5},  # Dratini (very rare!)
 		],
 	})
 
@@ -638,7 +647,7 @@ func _vermilion_city() -> Dictionary:
 			"x": 7, "y": 7, "name": "Lt. Surge", "type": "gym_leader",
 			"specialty": "electric", "badge": "Thunder Badge",
 			"dialog": ["I'm Lt. Surge! Prepare to be shocked!"],
-			"team": [{"id": 4, "level": 22}, {"id": 18, "level": 24}, {"id": 4, "level": 23}],
+			"team": [{"id": 4, "level": 20}, {"id": 18, "level": 22}, {"id": 4, "level": 24}],
 			"win_dialog": ["Electrifying battle! The Thunder Badge is yours!"],
 		},
 		"pokecenter": true, "shop": true,
@@ -716,10 +725,10 @@ func _celadon_city() -> Dictionary:
 		"npcs": [
 			{"x": 25, "y": 5, "name": "Nurse Joy", "type": "nurse", "dialog": ["Healed!", "Celadon's Pokemon Center is the finest!"]},
 			{"x": 25, "y": 13, "name": "Shopkeeper", "type": "shop", "dialog": ["Welcome to Celadon's big store!", "Best prices in the region!"]},
-			{"x": 20, "y": 22, "name": "Rocket Grunt", "type": "rocket", "dialog": ["Team Rocket controls this city!", "You'll pay for interfering!"], "team": [{"id": 8, "level": 22}, {"id": 12, "level": 24}, {"id": 6, "level": 23}]},
+			{"x": 20, "y": 22, "name": "Rocket Grunt", "type": "rocket", "dialog": ["Team Rocket controls this city!", "You'll pay for interfering!"], "team": [{"id": 8, "level": 20}, {"id": 12, "level": 22}, {"id": 6, "level": 21}]},
 			{"x": 7, "y": 19, "name": "Koga", "type": "gym_leader_2", "specialty": "poison", "badge": "Soul Badge",
 			 "dialog": ["I am Koga, master of Poison! Can you withstand my toxic techniques?"],
-			 "team": [{"id": 8, "level": 28}, {"id": 8, "level": 30}, {"id": 12, "level": 31}],
+			 "team": [{"id": 8, "level": 28}, {"id": 8, "level": 30}, {"id": 12, "level": 32}],
 			 "win_dialog": ["Your spirit is strong! Take the Soul Badge!"]},
 			{"x": 1, "y": 13, "name": "Sign", "type": "npc", "dialog": ["← Vermilion City (West)", "→ Saffron City (East)"]},
 			{"x": 37, "y": 13, "name": "Sign", "type": "npc", "dialog": ["→ Saffron City (East)", "Watch out for the swamp to the east!"]},
@@ -729,11 +738,18 @@ func _celadon_city() -> Dictionary:
 			"x": 7, "y": 6, "name": "Erika", "type": "gym_leader",
 			"specialty": "grass", "badge": "Rainbow Badge",
 			"dialog": ["I'm Erika. My grass Pokemon are beautiful and strong!"],
-			"team": [{"id": 1, "level": 26}, {"id": 8, "level": 28}, {"id": 1, "level": 27}],
+			"team": [{"id": 1, "level": 24}, {"id": 8, "level": 26}, {"id": 1, "level": 28}],
 			"win_dialog": ["What a lovely battle! The Rainbow Badge is yours!"],
 		},
 		"pokecenter": true, "shop": true,
-		"encounters": [],
+		"encounters": [
+			{"species_id": 8, "min_level": 20, "max_level": 25, "weight": 25},  # Nidoran (swamp)
+			{"species_id": 1, "min_level": 20, "max_level": 25, "weight": 20},  # Bulbasaur
+			{"species_id": 6, "min_level": 22, "max_level": 27, "weight": 20},  # Gastly
+			{"species_id": 12, "min_level": 21, "max_level": 26, "weight": 15}, # Murkrow
+			{"species_id": 9, "min_level": 22, "max_level": 28, "weight": 10},  # Abra
+			{"species_id": 19, "min_level": 24, "max_level": 28, "weight": 10}, # Mewtwo (very rare!)
+		],
 	})
 
 func _saffron_city() -> Dictionary:
@@ -810,14 +826,14 @@ func _saffron_city() -> Dictionary:
 			{"x": 19, "y": 23, "name": "Rival", "type": "rival", "dialog": [
 				"You again! I've been training hard!",
 				"This time I won't lose!",
-			], "team": [{"id": 11, "level": 32}, {"id": 2, "level": 34}, {"id": 16, "level": 35}], "battle_index": 2},
+			], "team": [{"id": 11, "level": 30}, {"id": 2, "level": 32}, {"id": 16, "level": 32}], "battle_index": 2},
 			{"x": 7, "y": 20, "name": "Blaine", "type": "gym_leader_2", "specialty": "fire", "badge": "Volcano Badge",
 			 "dialog": ["I'm Blaine! My fire burns hotter than the sun!"],
-			 "team": [{"id": 2, "level": 34}, {"id": 16, "level": 36}, {"id": 2, "level": 35}],
+			 "team": [{"id": 2, "level": 34}, {"id": 16, "level": 36}, {"id": 2, "level": 38}],
 			 "win_dialog": ["You extinguished my flames! The Volcano Badge is yours!"]},
 			{"x": 20, "y": 14, "name": "Giovanni", "type": "gym_leader_2", "specialty": "ground", "badge": "Earth Badge",
 			 "dialog": ["I am Giovanni. I was once Team Shadow's leader...", "But I've seen the error of my ways.", "Defeat me, and earn the final badge!"],
-			 "team": [{"id": 10, "level": 36}, {"id": 5, "level": 38}, {"id": 10, "level": 37}],
+			 "team": [{"id": 10, "level": 36}, {"id": 5, "level": 38}, {"id": 10, "level": 40}],
 			 "win_dialog": ["You are truly worthy! Take the Earth Badge — the final badge!", "The Pokemon League awaits you!"]},
 			{"x": 28, "y": 25, "name": "Archaeologist", "type": "npc", "dialog": ["Saffron City was built on ancient ruins!", "The ruins attract Psychic and Ghost Pokemon..."]},
 		],
@@ -825,11 +841,18 @@ func _saffron_city() -> Dictionary:
 			"x": 7, "y": 6, "name": "Sabrina", "type": "gym_leader",
 			"specialty": "psychic", "badge": "Marsh Badge",
 			"dialog": ["I foresaw your arrival... I'm Sabrina."],
-			"team": [{"id": 9, "level": 34}, {"id": 19, "level": 38}, {"id": 9, "level": 36}],
+			"team": [{"id": 9, "level": 32}, {"id": 19, "level": 34}, {"id": 9, "level": 36}],
 			"win_dialog": ["I did not foresee this... The Marsh Badge is yours."],
 		},
 		"pokecenter": true, "shop": false,
-		"encounters": [],
+		"encounters": [
+			{"species_id": 9, "min_level": 25, "max_level": 30, "weight": 25},  # Abra (ruins)
+			{"species_id": 6, "min_level": 26, "max_level": 30, "weight": 20},  # Gastly
+			{"species_id": 19, "min_level": 28, "max_level": 32, "weight": 10}, # Mewtwo (rare!)
+			{"species_id": 5, "min_level": 25, "max_level": 30, "weight": 20},  # Geodude
+			{"species_id": 13, "min_level": 26, "max_level": 31, "weight": 15}, # Aron
+			{"species_id": 12, "min_level": 27, "max_level": 32, "weight": 10}, # Murkrow
+		],
 	})
 
 func _pokemon_league() -> Dictionary:
@@ -899,24 +922,24 @@ func _pokemon_league() -> Dictionary:
 			{"x": 9, "y": 6, "name": "Lorelei", "type": "elite4", "dialog": ["I'm Lorelei of the Elite Four!", "Ice is my domain — you'll freeze!"], "team": [{"id": 7, "level": 42}, {"id": 17, "level": 44}]},
 			{"x": 14, "y": 6, "name": "Bruno", "type": "elite4", "dialog": ["My fighting spirit burns!", "Power alone wins battles!"], "team": [{"id": 5, "level": 44}, {"id": 13, "level": 46}]},
 			{"x": 20, "y": 6, "name": "Agatha", "type": "elite4", "dialog": ["Heh heh, scared?", "Ghosts fear no one..."], "team": [{"id": 6, "level": 46}, {"id": 20, "level": 48}]},
-			{"x": 26, "y": 6, "name": "Lance", "type": "elite4", "dialog": ["I am Lance, the Dragon Master!", "Dragons answer only to the strongest!"], "team": [{"id": 14, "level": 48}, {"id": 16, "level": 50}]},
+			{"x": 26, "y": 6, "name": "Lance", "type": "elite4", "dialog": ["I am Lance, the Dragon Master!", "Dragons answer only to the strongest!"], "team": [{"id": 14, "level": 50}, {"id": 16, "level": 52}]},
 			# Champion (Rival)
 			{"x": 19, "y": 16, "name": "Champion", "type": "champion", "dialog": [
 				"So you finally made it here...",
 				"I've been waiting for this moment!",
 				"I'm the Pokemon League Champion now!",
 				"Let's settle this once and for all!",
-			], "team": [{"id": 11, "level": 48}, {"id": 2, "level": 50}, {"id": 16, "level": 50}, {"id": 17, "level": 52}]},
+			], "team": [{"id": 11, "level": 48}, {"id": 2, "level": 50}, {"id": 16, "level": 52}, {"id": 17, "level": 55}]},
 			{"x": 19, "y": 27, "name": "Sign", "type": "npc", "dialog": ["↓ Saffron City (South)", "You stand before the Pokemon League!", "Only the strongest trainers reach this place."]},
 			{"x": 4, "y": 25, "name": "Veteran", "type": "npc", "dialog": ["The volcano's heat powers the League!", "Fire and Dragon Pokemon thrive here."]},
 		],
 		"pokecenter": false, "shop": false,
 		"encounters": [
-			{"species_id": 2, "min_level": 30, "max_level": 40, "weight": 25},  # Charmander
-			{"species_id": 16, "min_level": 35, "max_level": 42, "weight": 15}, # Arcanine
-			{"species_id": 5, "min_level": 30, "max_level": 38, "weight": 20},  # Geodude
-			{"species_id": 14, "min_level": 35, "max_level": 42, "weight": 10}, # Dratini
-			{"species_id": 6, "min_level": 32, "max_level": 40, "weight": 15},  # Gastly
-			{"species_id": 13, "min_level": 33, "max_level": 40, "weight": 10}, # Aron
+			{"species_id": 2, "min_level": 35, "max_level": 42, "weight": 25},  # Charmander
+			{"species_id": 16, "min_level": 38, "max_level": 45, "weight": 15}, # Arcanine
+			{"species_id": 5, "min_level": 35, "max_level": 42, "weight": 20},  # Geodude
+			{"species_id": 14, "min_level": 38, "max_level": 45, "weight": 10}, # Dratini
+			{"species_id": 6, "min_level": 36, "max_level": 43, "weight": 15},  # Gastly
+			{"species_id": 13, "min_level": 37, "max_level": 45, "weight": 10}, # Aron
 		],
 	})

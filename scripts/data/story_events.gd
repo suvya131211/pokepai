@@ -224,3 +224,22 @@ func on_gym_defeated(gym_name: String, badge: String):
 # Called after champion victory
 func on_champion_defeated():
     set_flag("champion")
+
+func get_postgame_events() -> Array:
+    if not has_flag("champion"):
+        return []
+    var events = []
+    if not has_flag("postgame_intro"):
+        set_flag("postgame_intro")
+        events.append({
+            "speaker": "Prof. Oak",
+            "lines": [
+                "Congratulations, Champion!",
+                "Now that you've saved the region, new challenges await!",
+                "Legendary Pokemon MEWTWO and DARKRAI have been spotted roaming the wild!",
+                "Try to catch every Pokemon in the Pokedex — all 50!",
+                "Some say a mysterious Pokemon called Eevee can be found near Pallet Town...",
+                "Good luck, Champion!",
+            ]
+        })
+    return events

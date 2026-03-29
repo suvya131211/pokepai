@@ -11,6 +11,10 @@ var step_accumulator: float = 0.0
 var follower_pokemon = null  # Pokemon instance
 var _follower_pos: Vector2 = Vector2.ZERO
 
+var walk_frame: int = 0
+var walk_timer: float = 0.0
+const WALK_FRAME_TIME = 0.15
+
 var area_manager = null
 var exit_cooldown: float = 0.0
 
@@ -30,6 +34,15 @@ func _physics_process(delta: float) -> void:
 
 	var input_dir := Input.get_vector("move_left", "move_right", "move_up", "move_down")
 	is_moving = input_dir.length() > 0.1
+
+	if is_moving:
+		walk_timer += delta
+		if walk_timer >= WALK_FRAME_TIME:
+			walk_timer = 0.0
+			walk_frame = (walk_frame + 1) % 4
+	else:
+		walk_frame = 0
+		walk_timer = 0.0
 
 	if is_moving:
 		# Set direction
@@ -105,27 +118,60 @@ func _ready():
 	add_to_group("player")
 
 func _draw() -> void:
-	# Player body (16x16 centered)
-	var body_color := Color("#3f51b5")
-	draw_rect(Rect2(-8, -8, 16, 16), body_color)
+	# Player body (16x16 centered) with walk animation
+	var body_color = Color("#3f51b5")
+	var head_color = Color("#5c6bc0")
+	var leg_offset = 0.0
+
+	# Walk bob
+	if is_moving:
+		leg_offset = sin(walk_frame * PI / 2) * 2
+
+	# Legs (bottom)
+	draw_rect(Rect2(-6, 2 + leg_offset, 4, 6), Color("#1a237e"))
+	draw_rect(Rect2(2, 2 - leg_offset, 4, 6), Color("#1a237e"))
+
+	# Body (middle)
+	draw_rect(Rect2(-7, -4, 14, 10), body_color)
+
+	# Head (top)
+	draw_rect(Rect2(-6, -10, 12, 8), head_color)
 
 	# Eyes based on direction
-	var eye_color := Color.WHITE
+	var eye_color = Color.WHITE
+	var pupil_color = Color("#1a1a2e")
 	match direction:
 		"down":
-			draw_rect(Rect2(-5, -3, 3, 3), eye_color)
-			draw_rect(Rect2(2, -3, 3, 3), eye_color)
+			draw_rect(Rect2(-4, -7, 3, 3), eye_color)
+			draw_rect(Rect2(1, -7, 3, 3), eye_color)
+			draw_rect(Rect2(-3, -6, 2, 2), pupil_color)
+			draw_rect(Rect2(2, -6, 2, 2), pupil_color)
 		"up":
-			draw_rect(Rect2(-5, -1, 3, 3), eye_color)
-			draw_rect(Rect2(2, -1, 3, 3), eye_color)
+			draw_rect(Rect2(-4, -8, 3, 3), eye_color)
+			draw_rect(Rect2(1, -8, 3, 3), eye_color)
 		"left":
-			draw_rect(Rect2(-6, -3, 3, 3), eye_color)
+			draw_rect(Rect2(-5, -7, 3, 3), eye_color)
+			draw_rect(Rect2(-4, -6, 2, 2), pupil_color)
 		"right":
-			draw_rect(Rect2(3, -3, 3, 3), eye_color)
+			draw_rect(Rect2(2, -7, 3, 3), eye_color)
+			draw_rect(Rect2(3, -6, 2, 2), pupil_color)
+
+	# Hat/hair
+	draw_rect(Rect2(-7, -11, 14, 3), Color("#e53935"))
+
+	# Backpack strap
+	if direction in ["left", "right"]:
+		draw_rect(Rect2(-2 if direction == "left" else 0, -3, 2, 6), Color("#ff9800"))
 
 	# Follower pokemon (trails behind)
 	if follower_pokemon:
 		_follower_pos = _follower_pos.lerp(global_position + Vector2(-20, 8), 0.08)
-		var offset := _follower_pos - global_position
-		draw_circle(offset, 7, follower_pokemon.color)
-		draw_arc(offset, 7, 0, TAU, 16, Color.WHITE, 1.5)
+		var offset = _follower_pos - global_position
+		# Draw follower with bob animation
+		var follower_bob = sin(Time.get_ticks_msec() * 0.004) * 1.5
+		var sprite_tex = PokemonDB.get_sprite_texture(follower_pokemon.id)
+		if sprite_tex:
+			draw_texture_rect(sprite_tex, Rect2(offset.x - 10, offset.y - 10 + follower_bob, 20, 20), false)
+		else:
+			draw_circle(offset + Vector2(0, follower_bob), 7, follower_pokemon.color)
+			draw_arc(offset + Vector2(0, follower_bob), 7, 0, TAU, 12, Color.WHITE, 1.0)

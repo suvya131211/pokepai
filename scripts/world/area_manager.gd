@@ -107,7 +107,13 @@ func check_encounter(tile_x: int, tile_y: int) -> Dictionary:
 			# Lower rate for caves (every tile is encounter), higher for grass patches
 			var rate = 0.03 if current_area.area_type == "cave" else 0.06
 			if randf() < rate:  # 3% cave, 6% grass
-				return current_area.spawn_encounter()
+				var entry = current_area.spawn_encounter()
+				# Post-game level boost
+				if not entry.is_empty() and StoryEvents.has_flag("champion"):
+					entry = entry.duplicate()
+					entry["min_level"] = entry.get("min_level", 5) + 10
+					entry["max_level"] = entry.get("max_level", 10) + 15
+				return entry
 	return {}
 
 func check_item(world_x: float, world_y: float) -> Dictionary:
@@ -129,6 +135,13 @@ func get_area_size() -> Vector2:
 	if current_area:
 		return Vector2(current_area.width * 16, current_area.height * 16)
 	return Vector2(480, 320)
+
+func check_trainer_los(player_x: float, player_y: float) -> Dictionary:
+	if current_area:
+		var tx = int(player_x / 16)
+		var ty = int(player_y / 16)
+		return current_area.check_trainer_los(tx, ty)
+	return {}
 
 func check_hidden_item(world_x: float, world_y: float) -> Dictionary:
 	var tx = int(world_x / 16)

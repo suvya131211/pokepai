@@ -317,6 +317,20 @@ func _draw_tile_detail(x: int, y: int, tile: int) -> void:
 			var wave = sin(wt + x * 0.5) * 2
 			draw_line(Vector2(tx, ty + 12 + wave), Vector2(tx + TILE_SIZE, ty + 12 + wave), Color(0.3, 0.6, 0.9, 0.3), 1.5)
 
+func check_trainer_los(player_tile_x: int, player_tile_y: int) -> Dictionary:
+	# Check if any undefeated trainer can see the player (within 4 tiles, facing them)
+	for npc in npcs:
+		if npc.get("type", "") not in ["trainer", "rocket"]:
+			continue
+		var nx = npc.get("x", -1)
+		var ny = npc.get("y", -1)
+		var dist = absi(player_tile_x - nx) + absi(player_tile_y - ny)
+		if dist <= 4 and dist > 0:
+			# Check if in a straight line
+			if player_tile_x == nx or player_tile_y == ny:
+				return npc
+	return {}
+
 func _process(_delta):
 	# Water animation
 	queue_redraw()

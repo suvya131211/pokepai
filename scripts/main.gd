@@ -242,6 +242,15 @@ func _process(_delta):
 					   (player_tile_x == gl_x and player_tile_y == gl_y):
 						_start_gym_battle(gl)
 
+		# Trainer line-of-sight
+		if npc_interaction_cooldown <= 0:
+			var los_trainer = area_manager.check_trainer_los(player.global_position.x, player.global_position.y)
+			if not los_trainer.is_empty():
+				var npc_key = "%s_%s_%d_%d" % [area_manager.get_current_area_name(), los_trainer.get("name", ""), los_trainer.get("x", 0), los_trainer.get("y", 0)]
+				if not npc_handler.is_defeated(npc_key):
+					npc_interaction_cooldown = 5.0
+					npc_handler.interact_with_npc(los_trainer, area_manager.get_current_area_name())
+
 func _try_fishing():
 	if randf() < 0.6:  # 60% chance to hook something
 		# Water Pokemon encounter
@@ -517,6 +526,11 @@ func _on_battle_ended(result_str, wild):
 					_show_gym_victory_story(gym_name, badge)
 				if current_npc_battle_data.get("is_champion", false):
 					StoryEvents.on_champion_defeated()
+					# Check postgame
+					var postgame = StoryEvents.get_postgame_events()
+					if not postgame.is_empty():
+						_pending_story_events = postgame.duplicate()
+						_show_next_story_event()
 					story_dialog.show_dialog("Prof. Oak", [
 						"...",
 						"I can't believe it... You've done it!",
@@ -562,11 +576,16 @@ func _on_shop():
 	var inv = player.get_node("Inventory")
 	inv.balls["pokeball"] += 5
 	inv.balls["greatball"] += 2
+	inv.potions["potion"] += 3
+	inv.potions["super_potion"] += 1
+	inv.medicine["antidote"] += 2
 	inv.key_items["repel"] = inv.key_items.get("repel", 0) + 3
 	inv.key_items["escape_rope"] = inv.key_items.get("escape_rope", 0) + 1
 	story_dialog.show_dialog("Shopkeeper", [
 		"Here are some items for your journey!",
-		"Got 5 Pokeballs, 2 Great Balls, 3 Repels, and 1 Escape Rope!",
+		"Got: 5 Pokeballs, 2 Great Balls",
+		"3 Potions, 1 Super Potion",
+		"2 Antidotes, 3 Repels, 1 Escape Rope!",
 	])
 
 func player_pokemon_hurt() -> bool:

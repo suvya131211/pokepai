@@ -109,6 +109,9 @@ func mark_rival_defeated(index: int) -> void:
 func get_badge_count() -> int:
     return defeated_gyms.size()
 
+func is_defeated(key: String) -> bool:
+    return key in defeated_trainers
+
 func _build_team(team_data: Array) -> Array:
     var team = []
     for entry in team_data:
