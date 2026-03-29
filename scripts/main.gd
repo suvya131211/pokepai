@@ -616,21 +616,38 @@ func _open_fly_menu():
 
 func _fly_to(town_name: String):
 	GameManager.show_fly_menu = false
+	EventTracker.log_event("FLY", {"to": town_name})
+	# Use screen transition for smooth fly
+	ScreenTransition.transition(Callable(self, "_do_fly_land").bind(town_name))
+
+func _do_fly_land(town_name: String):
 	var spawn = area_manager.load_area(town_name)
 	if spawn.is_empty():
+		GameManager.change_state(GameManager.GameState.WORLD)
 		return
 	var sx = spawn["x"]
 	var sy = spawn["y"]
+	var area_w = 30
+	var area_h = 20
 	if area_manager.current_area:
-		for try_x in [14, 15, sx]:
-			if area_manager.current_area.is_walkable(try_x, sy):
-				sx = try_x
-				break
+		area_w = area_manager.current_area.width
+		area_h = area_manager.current_area.height
+		# Find walkable position near center
+		var found = false
+		for try_x in [area_w / 2, area_w / 2 + 1, area_w / 2 - 1, sx]:
+			for try_y in [area_h / 2, area_h / 2 + 1, sy]:
+				if area_manager.current_area.is_walkable(try_x, try_y):
+					sx = try_x
+					sy = try_y
+					found = true
+					break
+			if found: break
 	player.global_position = Vector2(sx * 16 + 8, sy * 16 + 8)
 	player.exit_cooldown = 3.0
-	story_dialog.show_dialog("", ["Flew to %s!" % town_name])
-	SaveManager.save_game()
-	EventTracker.log_event("FLY", {"to": town_name})
+	npc_interaction_cooldown = 3.0
+	GameManager.change_state(GameManager.GameState.WORLD)
+	_show_area_name("Flew to %s!" % town_name)
+	SoundManager.play_sfx("door")
 
 func _unhandled_input(event):
 	if event is InputEventKey and event.pressed:
