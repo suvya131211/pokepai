@@ -38,74 +38,86 @@ func _draw_fly_menu(vp: Vector2):
 	draw_string(ThemeDB.fallback_font, Vector2(mx + 10, my + menu_h - 4), "Press 1-%d or ESC" % towns.size(), HORIZONTAL_ALIGNMENT_LEFT, menu_w, 10, Color("#888"))
 
 func _draw_mini_map(vp: Vector2):
-	# Small minimap in top-right corner
-	var map_w = 120.0
-	var map_h = 80.0
-	var mx = vp.x - map_w - 10
-	var my = 10.0
+	# Larger, cleaner minimap in top-right corner
+	var map_w = 160.0
+	var map_h = 110.0
+	var mx = vp.x - map_w - 12
+	var my = 8.0
+	var panel_h = map_h + 60  # extra space for text below map
 
-	# Background
-	draw_rect(Rect2(mx - 2, my - 2, map_w + 4, map_h + 4), Color(0, 0, 0, 0.7))
+	# Solid dark panel background with border
+	draw_rect(Rect2(mx - 6, my - 6, map_w + 12, panel_h + 12), Color(0.03, 0.05, 0.1, 0.92))
+	draw_rect(Rect2(mx - 6, my - 6, map_w + 12, panel_h + 12), Color("#4fc3f7"), false, 1.5)
 
 	# Get area data
 	var area_mgr = _get_area_manager()
 	if not area_mgr or not area_mgr.current_area:
-		draw_string(ThemeDB.fallback_font, Vector2(mx + 10, my + 40), "No map", HORIZONTAL_ALIGNMENT_LEFT, map_w, 12, Color("#888"))
+		draw_string(ThemeDB.fallback_font, Vector2(mx + 30, my + 55), "No map", HORIZONTAL_ALIGNMENT_LEFT, map_w, 14, Color("#888"))
 		return
 
 	var area = area_mgr.current_area
 	var tile_w = map_w / area.width
 	var tile_h = map_h / area.height
 
-	# Draw tiles
+	# Draw tiles (crisp pixel blocks)
 	for y in area.height:
 		for x in area.width:
 			var tile = area.get_tile(x, y)
 			var color = area.TILE_COLORS.get(tile, Color.BLACK)
-			draw_rect(Rect2(mx + x * tile_w, my + y * tile_h, tile_w + 0.5, tile_h + 0.5), color)
+			var rx = mx + x * tile_w
+			var ry = my + y * tile_h
+			draw_rect(Rect2(floorf(rx), floorf(ry), ceilf(tile_w), ceilf(tile_h)), color)
 
-	# Draw exits as green dots
+	# Map border
+	draw_rect(Rect2(mx, my, map_w, map_h), Color("#4fc3f7"), false, 1.0)
+
+	# Draw exits as bright green arrows
 	for ex in area.exits:
 		var ex_x = mx + ex["x"] * tile_w + tile_w / 2
 		var ex_y = my + ex["y"] * tile_h + tile_h / 2
-		draw_circle(Vector2(ex_x, ex_y), 3, Color(0, 1, 0, 0.8))
+		draw_circle(Vector2(ex_x, ex_y), 3.5, Color(0.2, 1, 0.3, 0.9))
+		draw_arc(Vector2(ex_x, ex_y), 3.5, 0, TAU, 8, Color.WHITE, 1.0)
 
-	# Draw NPCs
+	# Draw NPCs as larger dots
 	for npc in area.npcs:
 		var nx = mx + npc["x"] * tile_w + tile_w / 2
 		var ny = my + npc["y"] * tile_h + tile_h / 2
 		var nc = Color("#4fc3f7")
-		if npc.get("type", "") == "trainer": nc = Color("#e53935")
+		if npc.get("type", "") in ["trainer", "rocket"]: nc = Color("#e53935")
 		elif npc.get("type", "") == "nurse": nc = Color("#ff69b4")
 		elif npc.get("type", "") == "shop": nc = Color("#2196f3")
 		elif npc.get("type", "") == "rival": nc = Color("#ff9800")
-		elif npc.get("type", "") == "rocket": nc = Color("#9c27b0")
-		draw_circle(Vector2(nx, ny), 2, nc)
+		elif npc.get("type", "") in ["gym_leader_2"]: nc = Color("#ffd700")
+		draw_circle(Vector2(nx, ny), 2.5, nc)
 
 	# Draw gym leader
 	if not area.gym_leader.is_empty():
 		var gx = mx + area.gym_leader.get("x", 0) * tile_w + tile_w / 2
 		var gy = my + area.gym_leader.get("y", 0) * tile_h + tile_h / 2
-		draw_circle(Vector2(gx, gy), 3, Color("#ffd700"))
+		draw_circle(Vector2(gx, gy), 4, Color("#ffd700"))
+		draw_arc(Vector2(gx, gy), 4, 0, TAU, 8, Color.WHITE, 1.0)
 
-	# Draw player
+	# Draw player as pulsing white dot
 	var player = get_tree().get_first_node_in_group("player")
 	if player:
 		var px = mx + (player.global_position.x / 16.0) * tile_w
 		var py = my + (player.global_position.y / 16.0) * tile_h
-		draw_circle(Vector2(px, py), 3, Color.WHITE)
+		var pulse = sin(Time.get_ticks_msec() * 0.005) * 0.3 + 0.7
+		draw_circle(Vector2(px, py), 4, Color(1, 1, 1, pulse))
 
-	# Area name
-	draw_string(ThemeDB.fallback_font, Vector2(mx, my + map_h + 12), area.area_name, HORIZONTAL_ALIGNMENT_LEFT, map_w, 10, Color("#4fc3f7"))
+	# Text below map — clear, readable, well-spaced
+	var text_y = my + map_h + 8
+	# Area name (large, bright)
+	draw_string(ThemeDB.fallback_font, Vector2(mx + 2, text_y + 12), area.area_name, HORIZONTAL_ALIGNMENT_LEFT, map_w, 13, Color("#4fc3f7"))
 
-	# Biome label
+	# Biome + badges on same line
 	var biome_label = _get_biome_label(area)
-	if biome_label != "":
-		draw_string(ThemeDB.fallback_font, Vector2(mx, my + map_h + 24), biome_label, HORIZONTAL_ALIGNMENT_LEFT, map_w, 9, Color("#aed581"))
+	var badge_text = "Badges: %d/8" % GameManager.badges_earned
+	draw_string(ThemeDB.fallback_font, Vector2(mx + 2, text_y + 28), biome_label, HORIZONTAL_ALIGNMENT_LEFT, map_w * 0.5, 11, Color("#aed581"))
+	draw_string(ThemeDB.fallback_font, Vector2(mx + map_w * 0.55, text_y + 28), badge_text, HORIZONTAL_ALIGNMENT_LEFT, map_w * 0.45, 11, Color("#ffd700"))
 
-	# Legend hint
-	draw_string(ThemeDB.fallback_font, Vector2(mx, my + map_h + 36), "[M] expand", HORIZONTAL_ALIGNMENT_LEFT, map_w, 9, Color("#666"))
-	draw_string(ThemeDB.fallback_font, Vector2(mx, my + map_h + 48), "[H] Controls", HORIZONTAL_ALIGNMENT_LEFT, map_w, 9, Color("#555"))
+	# Controls hint
+	draw_string(ThemeDB.fallback_font, Vector2(mx + 2, text_y + 44), "[M] Map  [H] Help  [T] Fly", HORIZONTAL_ALIGNMENT_LEFT, map_w, 10, Color("#777"))
 
 	# Badge count display
 	var badge_count = GameManager.badges_earned
