@@ -414,6 +414,8 @@ func _mt_moon() -> Dictionary:
 			{"species_id": 9, "min_level": 8, "max_level": 12, "weight": 10},   # Abra
 			{"species_id": 13, "min_level": 9, "max_level": 12, "weight": 8},   # Aron
 			{"species_id": 2, "min_level": 8, "max_level": 12, "weight": 7},    # Charmander (lava area!)
+			{"species_id": 34, "min_level": 8, "max_level": 12, "weight": 15},   # Zubat
+			{"species_id": 44, "min_level": 9, "max_level": 12, "weight": 10},   # Cubone
 		],
 		"hidden_items": [
 			{"x": 20, "y": 6, "type": "razz", "found": false},
@@ -511,6 +513,9 @@ func _cerulean_city() -> Dictionary:
 			{"species_id": 9, "min_level": 11, "max_level": 15, "weight": 15},  # Abra
 			{"species_id": 15, "min_level": 10, "max_level": 14, "weight": 15}, # Clefairy
 			{"species_id": 1, "min_level": 11, "max_level": 15, "weight": 10},  # Bulbasaur
+			{"species_id": 37, "min_level": 14, "max_level": 18, "weight": 20},  # Psyduck
+			{"species_id": 46, "min_level": 12, "max_level": 16, "weight": 15},  # Horsea
+			{"species_id": 48, "min_level": 5, "max_level": 15, "weight": 25},   # Magikarp (common\!)
 		],
 	})
 
@@ -570,6 +575,7 @@ func _route_3() -> Dictionary:
 			{"species_id": 11, "min_level": 14, "max_level": 18, "weight": 15}, # Pidgey
 			{"species_id": 13, "min_level": 16, "max_level": 20, "weight": 10}, # Aron (rare)
 			{"species_id": 14, "min_level": 17, "max_level": 20, "weight": 5},  # Dratini (very rare!)
+			{"species_id": 49, "min_level": 14, "max_level": 18, "weight": 5},   # Lapras (rare\!)
 		],
 	})
 
@@ -749,6 +755,8 @@ func _celadon_city() -> Dictionary:
 			{"species_id": 12, "min_level": 21, "max_level": 26, "weight": 15}, # Murkrow
 			{"species_id": 9, "min_level": 22, "max_level": 28, "weight": 10},  # Abra
 			{"species_id": 19, "min_level": 24, "max_level": 28, "weight": 10}, # Mewtwo (very rare!)
+			{"species_id": 31, "min_level": 20, "max_level": 25, "weight": 15},  # Ekans
+			{"species_id": 28, "min_level": 18, "max_level": 22, "weight": 10},  # Weedle
 		],
 	})
 
@@ -941,5 +949,7 @@ func _pokemon_league() -> Dictionary:
 			{"species_id": 14, "min_level": 38, "max_level": 45, "weight": 10}, # Dratini
 			{"species_id": 6, "min_level": 36, "max_level": 43, "weight": 15},  # Gastly
 			{"species_id": 13, "min_level": 37, "max_level": 45, "weight": 10}, # Aron
+			{"species_id": 32, "min_level": 30, "max_level": 38, "weight": 15},  # Vulpix
+			{"species_id": 45, "min_level": 32, "max_level": 40, "weight": 10},  # Rhyhorn
 		],
 	})

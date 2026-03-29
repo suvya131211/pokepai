@@ -95,6 +95,41 @@ var moves: Dictionary = {
     "Cut": {"type":"normal","power":50,"accuracy":95,"pp":30,"category":"physical","effect":"none"},
     "Strength": {"type":"normal","power":80,"accuracy":100,"pp":15,"category":"physical","effect":"none"},
     "Flash": {"type":"normal","power":0,"accuracy":100,"pp":20,"category":"status","effect":"lower_atk"},
+
+    # New moves for expanded species
+    "Bug Bite": {"type":"grass","power":60,"accuracy":100,"pp":20,"category":"physical","effect":"none"},
+    "Hyper Fang": {"type":"normal","power":80,"accuracy":90,"pp":15,"category":"physical","effect":"none"},
+    "Peck": {"type":"flying","power":35,"accuracy":100,"pp":35,"category":"physical","effect":"none"},
+    "Fury Attack": {"type":"normal","power":15,"accuracy":85,"pp":20,"category":"physical","effect":"none"},
+    "Aerial Ace": {"type":"flying","power":60,"accuracy":100,"pp":20,"category":"physical","effect":"none"},
+    "Wrap": {"type":"normal","power":15,"accuracy":90,"pp":20,"category":"physical","effect":"none"},
+    "Acid": {"type":"poison","power":40,"accuracy":100,"pp":30,"category":"special","effect":"lower_def"},
+    "Sing": {"type":"normal","power":0,"accuracy":55,"pp":15,"category":"status","effect":"sleep"},
+    "Double Slap": {"type":"normal","power":15,"accuracy":85,"pp":10,"category":"physical","effect":"none"},
+    "Absorb": {"type":"grass","power":20,"accuracy":100,"pp":25,"category":"special","effect":"leech"},
+    "Pay Day": {"type":"normal","power":40,"accuracy":100,"pp":20,"category":"physical","effect":"none"},
+    "Low Kick": {"type":"fighting","power":50,"accuracy":100,"pp":20,"category":"physical","effect":"none"},
+    "Focus Energy": {"type":"normal","power":0,"accuracy":100,"pp":30,"category":"status","effect":"raise_atk"},
+    "Cross Chop": {"type":"fighting","power":100,"accuracy":80,"pp":5,"category":"physical","effect":"none"},
+    "Headbutt": {"type":"normal","power":70,"accuracy":100,"pp":15,"category":"physical","effect":"none"},
+    "Sonic Boom": {"type":"normal","power":0,"accuracy":90,"pp":20,"category":"special","effect":"fixed_40"},
+    "Bone Club": {"type":"ground","power":65,"accuracy":85,"pp":20,"category":"physical","effect":"none"},
+    "Bonemerang": {"type":"ground","power":50,"accuracy":90,"pp":10,"category":"physical","effect":"none"},
+    "Horn Attack": {"type":"normal","power":65,"accuracy":100,"pp":25,"category":"physical","effect":"none"},
+    "Stomp": {"type":"normal","power":65,"accuracy":100,"pp":20,"category":"physical","effect":"none"},
+    "Twister": {"type":"dragon","power":40,"accuracy":100,"pp":20,"category":"special","effect":"none"},
+    "Splash": {"type":"normal","power":0,"accuracy":100,"pp":40,"category":"status","effect":"none"},
+    "Flail": {"type":"normal","power":0,"accuracy":100,"pp":15,"category":"physical","effect":"none"},
+    "Swift": {"type":"normal","power":60,"accuracy":100,"pp":20,"category":"special","effect":"none"},
+    "Take Down": {"type":"normal","power":90,"accuracy":85,"pp":20,"category":"physical","effect":"none"},
+    "Confuse Ray": {"type":"ghost","power":0,"accuracy":100,"pp":10,"category":"status","effect":"none"},
+    "Body Slam": {"type":"normal","power":85,"accuracy":100,"pp":15,"category":"physical","effect":"paralyze"},
+    "Disable": {"type":"normal","power":0,"accuracy":100,"pp":20,"category":"status","effect":"none"},
+    "Fury Swipes": {"type":"normal","power":18,"accuracy":80,"pp":15,"category":"physical","effect":"none"},
+    "String Shot": {"type":"grass","power":0,"accuracy":95,"pp":40,"category":"status","effect":"lower_atk"},
+    "Rapid Spin": {"type":"normal","power":50,"accuracy":100,"pp":40,"category":"physical","effect":"none"},
+    "Slash": {"type":"normal","power":70,"accuracy":100,"pp":20,"category":"physical","effect":"none"},
+    "Supersonic": {"type":"normal","power":0,"accuracy":55,"pp":20,"category":"status","effect":"none"},
 }
 
 # Default movesets per species (by pokemon_db id)
@@ -119,6 +154,36 @@ var default_movesets: Dictionary = {
     18: ["Thunderbolt", "Quick Attack", "Thunder Wave", "Iron Tail"], # Raichu
     19: ["Psychic", "Shadow Ball", "Ice Beam", "Confusion"],        # Mewtwo
     20: ["Dark Pulse", "Shadow Ball", "Ice Beam", "Psychic"],       # Darkrai
+    21: ["Vine Whip", "Razor Leaf", "Leech Seed", "Tackle"],        # Ivysaur
+    22: ["Solar Beam", "Razor Leaf", "Leech Seed", "Sludge Bomb"],  # Venusaur
+    23: ["Ember", "Slash", "Dragon Rage", "Tackle"],                # Charmeleon
+    24: ["Flamethrower", "Dragon Rage", "Slash", "Fire Blast"],     # Charizard
+    25: ["Water Gun", "Bite", "Rapid Spin", "Tackle"],              # Wartortle
+    26: ["Hydro Pump", "Ice Beam", "Bite", "Surf"],                 # Blastoise
+    27: ["Tackle", "String Shot", "Bug Bite", "Tackle"],            # Caterpie
+    28: ["Poison Sting", "String Shot", "Bug Bite", "Tackle"],      # Weedle
+    29: ["Tackle", "Quick Attack", "Bite", "Hyper Fang"],           # Rattata
+    30: ["Peck", "Fury Attack", "Quick Attack", "Aerial Ace"],      # Spearow
+    31: ["Bite", "Poison Sting", "Wrap", "Acid"],                   # Ekans
+    32: ["Ember", "Quick Attack", "Flamethrower", "Confuse Ray"],   # Vulpix
+    33: ["Sing", "Pound", "Double Slap", "Body Slam"],              # Jigglypuff
+    34: ["Bite", "Supersonic", "Poison Sting", "Wing Attack"],      # Zubat
+    35: ["Absorb", "Acid", "Sleep Powder", "Razor Leaf"],           # Oddish
+    36: ["Scratch", "Bite", "Pay Day", "Slash"],                    # Meowth
+    37: ["Water Gun", "Confusion", "Scratch", "Disable"],           # Psyduck
+    38: ["Low Kick", "Karate Chop", "Fury Swipes", "Cross Chop"],   # Mankey
+    39: ["Ember", "Bite", "Flamethrower", "Take Down"],             # Growlithe
+    40: ["Low Kick", "Karate Chop", "Focus Energy", "Cross Chop"],  # Machop
+    41: ["Water Gun", "Confusion", "Headbutt", "Psychic"],          # Slowpoke
+    42: ["Thunder Shock", "Sonic Boom", "Thunder Wave", "Thunderbolt"],  # Magnemite
+    43: ["Rock Throw", "Tackle", "Rock Slide", "Iron Tail"],        # Onix
+    44: ["Bone Club", "Headbutt", "Bonemerang", "Earthquake"],      # Cubone
+    45: ["Horn Attack", "Rock Throw", "Stomp", "Earthquake"],       # Rhyhorn
+    46: ["Water Gun", "Bubble", "Twister", "Hydro Pump"],           # Horsea
+    47: ["Quick Attack", "Slash", "Wing Attack", "Swords Dance"],   # Scyther
+    48: ["Splash", "Tackle", "Flail", "Tackle"],                    # Magikarp
+    49: ["Ice Beam", "Surf", "Body Slam", "Psychic"],               # Lapras
+    50: ["Tackle", "Quick Attack", "Bite", "Swift"],                # Eevee
 }
 
 func get_move(move_name: String) -> Dictionary:

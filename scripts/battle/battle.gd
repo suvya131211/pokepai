@@ -812,18 +812,47 @@ func _spawn_move_particles(move_type: String, target: String):
     var cy = vp.y * 0.28 if target == "wild" else vp.y * 0.52
     var color = TYPE_COLORS.get(move_type, Color.WHITE)
 
-    for i in 15:
-        var angle = randf() * TAU
-        var speed = randf_range(30, 80)
-        move_particles.append({
-            "x": cx, "y": cy,
-            "vx": cos(angle) * speed,
-            "vy": sin(angle) * speed - 20,
-            "life": 0.8,
-            "max_life": 0.8,
-            "color": color,
-            "size": randf_range(3, 8),
-        })
+    match move_type:
+        "fire":
+            # Flame burst - upward orange/red particles
+            for i in 20:
+                move_particles.append({"x": cx + randf_range(-20, 20), "y": cy, "vx": randf_range(-30, 30), "vy": randf_range(-80, -30), "life": 0.8, "max_life": 0.8, "color": Color(1, randf_range(0.3, 0.7), 0, 1), "size": randf_range(4, 10)})
+        "water":
+            # Water splash - blue droplets falling
+            for i in 18:
+                move_particles.append({"x": cx + randf_range(-25, 25), "y": cy - 20, "vx": randf_range(-20, 20), "vy": randf_range(-40, 20), "life": 0.7, "max_life": 0.7, "color": Color(0.2, 0.5, 1, 0.8), "size": randf_range(3, 7)})
+        "grass":
+            # Leaf swirl - green leaves spinning outward
+            for i in 15:
+                var angle = randf() * TAU
+                move_particles.append({"x": cx, "y": cy, "vx": cos(angle) * randf_range(40, 70), "vy": sin(angle) * randf_range(40, 70) - 20, "life": 1.0, "max_life": 1.0, "color": Color(0.2, 0.7, 0.2, 0.9), "size": randf_range(3, 8)})
+        "electric":
+            # Lightning bolts - yellow zigzag lines
+            for i in 25:
+                move_particles.append({"x": cx + randf_range(-30, 30), "y": cy + randf_range(-30, 30), "vx": randf_range(-100, 100), "vy": randf_range(-100, 100), "life": 0.3, "max_life": 0.3, "color": Color(1, 1, 0.3, 1), "size": randf_range(2, 5)})
+        "ice":
+            # Ice crystals - light blue diamonds floating down
+            for i in 15:
+                move_particles.append({"x": cx + randf_range(-25, 25), "y": cy - 30, "vx": randf_range(-15, 15), "vy": randf_range(10, 40), "life": 1.2, "max_life": 1.2, "color": Color(0.6, 0.85, 1, 0.9), "size": randf_range(4, 9)})
+        "ghost", "dark":
+            # Shadow wisps - purple/dark expanding circles
+            for i in 12:
+                var angle = randf() * TAU
+                move_particles.append({"x": cx, "y": cy, "vx": cos(angle) * 40, "vy": sin(angle) * 40, "life": 1.0, "max_life": 1.0, "color": Color(0.4, 0.1, 0.6, 0.7), "size": randf_range(5, 12)})
+        "rock", "ground":
+            # Rock fragments - brown chunks flying up then down
+            for i in 15:
+                move_particles.append({"x": cx + randf_range(-15, 15), "y": cy + 10, "vx": randf_range(-40, 40), "vy": randf_range(-70, -20), "life": 0.8, "max_life": 0.8, "color": Color(0.6, 0.4, 0.2, 0.9), "size": randf_range(4, 8)})
+        "psychic", "fairy":
+            # Sparkle burst - pink/purple glitter
+            for i in 20:
+                var angle = (float(i) / 20.0) * TAU
+                move_particles.append({"x": cx, "y": cy, "vx": cos(angle) * 50, "vy": sin(angle) * 50, "life": 0.9, "max_life": 0.9, "color": Color(1, 0.5, 0.8, 0.8), "size": randf_range(2, 6)})
+        _:
+            # Default: generic burst
+            for i in 15:
+                var angle = randf() * TAU
+                move_particles.append({"x": cx, "y": cy, "vx": cos(angle) * randf_range(30, 60), "vy": sin(angle) * randf_range(30, 60), "life": 0.8, "max_life": 0.8, "color": color, "size": randf_range(3, 8)})
 
 # ─── Draw ─────────────────────────────────────────────────────────────────────
 func _draw():

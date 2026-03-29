@@ -3,6 +3,8 @@ class_name PlayerInventory
 
 var balls: Dictionary = {"pokeball": 15, "greatball": 5, "ultraball": 2}
 var berries: Dictionary = {"razz": 5, "nanab": 3, "pinap": 2}
+var potions: Dictionary = {"potion": 3, "super_potion": 1, "full_restore": 0}
+var medicine: Dictionary = {"antidote": 2, "awakening": 2, "paralyze_heal": 1}
 var key_items: Dictionary = {"repel": 0, "escape_rope": 0}
 var repel_steps: int = 0  # remaining repel steps
 
@@ -34,3 +36,19 @@ func use_berry(berry_type: String) -> bool:
 		berries[berry_type] -= 1
 		return true
 	return false
+
+func use_potion(type: String, pokemon) -> int:
+	if potions.get(type, 0) <= 0:
+		return 0
+	potions[type] -= 1
+	var heal = {"potion": 20, "super_potion": 50, "full_restore": 999}.get(type, 20)
+	var actual = mini(heal, pokemon.max_hp - pokemon.hp)
+	pokemon.hp = mini(pokemon.max_hp, pokemon.hp + heal)
+	return actual
+
+func use_medicine(type: String, pokemon) -> bool:
+	if medicine.get(type, 0) <= 0:
+		return false
+	medicine[type] -= 1
+	pokemon.status = ""
+	return true
